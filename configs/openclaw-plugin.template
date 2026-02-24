@@ -1,0 +1,35 @@
+# OpenClaw Configuration Template
+# SearXNG Plugin Configuration
+# Merge with: ~/.openclaw/openclaw.json
+
+{
+  "plugins": {
+    "entries": {
+      "searxng-search": {
+        "enabled": true,
+        "config": {
+          "baseUrl": "http://localhost:8080",
+          "timeoutMs": 60000,
+          "defaultCount": 100,
+          "enableMultiPage": true
+        }
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "compaction": {
+        "reserveTokensFloor": 80000,
+        "memoryFlush": {
+          "enabled": true,
+          "softThresholdTokens": 15000
+        }
+      },
+      "contextPruning": {
+        "mode": "cache-ttl",
+        "ttl": "6h",
+        "keepLastAssistants": 5
+      }
+    }
+  }
+}

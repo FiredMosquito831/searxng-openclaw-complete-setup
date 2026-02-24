@@ -1,0 +1,98 @@
+# SearXNG Configuration Template
+# Optimized for OpenClaw integration
+# Copy to: /etc/searxng/settings.yml
+
+general:
+  debug: false
+  instance_name: "SearXNG"
+  privacypolicy_url: false
+  donation_url: false
+  contact_url: false
+  enable_metrics: true
+
+search:
+  safe_search: 0
+  autocomplete: "google"
+  default_lang: "en"
+  formats:
+    - html
+    - json  # CRITICAL for OpenClaw!
+
+server:
+  secret_key: "CHANGE_THIS_TO_RANDOM_64_CHAR_STRING"
+  limiter: false
+  image_proxy: true
+  http_protocol_version: "1.0"
+  bind_address: "127.0.0.1"
+  port: 8080
+  base_url: false
+
+redis:
+  url: "redis://localhost:6379/0"
+
+ui:
+  default_theme: simple
+  default_locale: "en"
+  query_in_title: true
+  infinite_scroll: true
+  center_alignment: true
+  results_on_new_tab: true
+
+outgoing:
+  request_timeout: 10.0
+  max_request_timeout: 30.0
+  useragent_suffix: ""
+  pool_connections: 100
+  pool_maxsize: 50
+  enable_http2: true
+
+engines:
+  # General Search
+  - name: google
+    engine: google
+    shortcut: g
+    disabled: false
+    
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: d
+    disabled: false
+    
+  - name: brave
+    engine: brave
+    shortcut: b
+    disabled: false
+    
+  - name: bing
+    engine: bing
+    shortcut: i
+    disabled: false
+
+  # Knowledge
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: w
+    disabled: false
+
+  # Code
+  - name: github
+    engine: github
+    shortcut: gh
+    disabled: false
+
+  # Video
+  - name: youtube
+    engine: youtube
+    shortcut: yt
+    disabled: false
+
+  # News
+  - name: google news
+    engine: google_news
+    shortcut: gn
+    disabled: false
+    
+  - name: duckduckgo news
+    engine: duckduckgo_news
+    shortcut: dn
+    disabled: false
