@@ -1,89 +1,187 @@
-# ⚙️ Configuration Guide
+# Configuration Guide
 
-**Optimize your SearXNG + OpenClaw setup**
+Tune SearXNG, Redis, and the OpenClaw search integration.
 
 ---
 
-## 📋 **CONFIGURATION FILES**
+## Configuration files
 
 | File | Purpose | Location |
-|------|---------|----------|
-| `settings.yml` | SearXNG main config | `/etc/searxng/settings.yml` |
-| `openclaw.json` | OpenClaw plugin config | `~/.openclaw/openclaw.json` |
-| `searxng.service` | Systemd service | `/etc/systemd/system/searxng.service` |
+| --- | --- | --- |
+| `settings.yml` | SearXNG configuration | `/etc/searxng/settings.yml` |
+| `openclaw.json` | OpenClaw plugin/provider configuration | `~/.openclaw/openclaw.json` |
+| `searxng.service` | systemd unit | `/etc/systemd/system/searxng.service` |
+| `settings.yml.template` | Reference template | [`configs/settings.yml.template`](configs/settings.yml.template) |
+| `openclaw-plugin.template` | Reference plugin block | [`configs/openclaw-plugin.template`](configs/openclaw-plugin.template) |
+
+After editing SearXNG settings:
+
+```bash
+sudo systemctl restart searxng
+```
+
+After editing OpenClaw configuration:
+
+```bash
+systemctl --user restart openclaw-gateway.service
+openclaw doctor
+```
 
 ---
 
-## 🔧 **SEARXNG CONFIGURATION**
+## SearXNG configuration
 
-### Optimal Settings for OpenClaw
+### Inherit SearXNG's defaults
 
-Edit `/etc/searxng/settings.yml`:
+A partial settings file must start with `use_default_settings`. Without it, SearXNG
+uses the user file as the complete configuration instead of merging it with the
+defaults. `keep_only` limits the merged engine catalogue to the seven engines this
+setup enables:
 
 ```yaml
-# Critical for OpenClaw integration
+use_default_settings:
+  engines:
+    keep_only:
+      - google
+      - duckduckgo
+      - brave
+      - bing
+      - wikipedia
+      - github
+      - youtube
+```
+
+Add or remove engine names in `keep_only` when you change the enabled set. The
+`engines:` list below then overrides shortcuts and flags for those engines.
+
+### Minimum settings for OpenClaw
+
+```yaml
 search:
   formats:
     - html
-    - json  # ⚠️ REQUIRED for OpenClaw!
+    - json            # required by the plugin
 
 server:
-  limiter: false           # Disable for local use
-  bind_address: "127.0.0.1"  # Localhost only (secure)
+  limiter: false      # safe only while bound to loopback
+  bind_address: "127.0.0.1"
   port: 8080
 
 redis:
-  url: "redis://localhost:6379/0"  # Required for caching
+  url: "redis://localhost:6379/0"
+```
 
-# Enable these engines for best results
+`json` must be present. If the API returns HTML, this is the first setting to check.
+
+### Engines enabled by the installer
+
+The installer enables seven engines. SearXNG ships with 70+; enable additional ones
+by adding their `name` and `engine` entries under `engines:`.
+
+```yaml
 engines:
   - name: google
     engine: google
+    shortcut: g
     disabled: false
   - name: duckduckgo
     engine: duckduckgo
+    shortcut: d
     disabled: false
   - name: brave
     engine: brave
+    shortcut: b
     disabled: false
-  - name: github
-    engine: github
+  - name: bing
+    engine: bing
+    shortcut: i
     disabled: false
   - name: wikipedia
     engine: wikipedia
+    shortcut: w
+    disabled: false
+  - name: github
+    engine: github
+    shortcut: gh
+    disabled: false
+  - name: youtube
+    engine: youtube
+    shortcut: yt
     disabled: false
 ```
 
-### Performance Tuning
+The template adds news engines:
+
+```yaml
+  - name: google news
+    engine: google_news
+    shortcut: gn
+    disabled: false
+  - name: duckduckgo news
+    engine: duckduckgo_news
+    shortcut: dn
+    disabled: false
+```
+
+Enable only engines you need. More engines usually means slower queries and a higher
+chance that one upstream engine rate-limits your server.
+
+### Timeouts and connection pools
 
 ```yaml
 outgoing:
-  request_timeout: 10.0      # Seconds to wait
-  max_request_timeout: 30.0  # Maximum timeout
-  pool_connections: 100      # Connection pool
-  pool_maxsize: 50          # Max connections per host
-  enable_http2: true        # Enable HTTP/2
+  request_timeout: 10.0       # seconds per request
+  max_request_timeout: 30.0   # hard ceiling
+  pool_connections: 100
+  pool_maxsize: 50
+  enable_http2: true
 ```
 
-### Security Hardening
+`max_request_timeout` belongs under `outgoing`, not `server`.
+
+For a small host (512 MB–1 GB RAM), reduce the pool sizes:
+
+```yaml
+outgoing:
+  request_timeout: 10.0
+  max_request_timeout: 20.0
+  pool_connections: 50
+  pool_maxsize: 25
+```
+
+For a larger host, you can raise them. There is no benchmark in this repository that
+justifies a specific number; change one value at a time and measure with your own
+queries.
+
+### Security settings
 
 ```yaml
 server:
-  secret_key: "GENERATE_64_CHAR_RANDOM_STRING"
-  limiter: false           # OK for localhost
-  image_proxy: true        # Proxy images for privacy
-  
-# Generate secret key:
-# openssl rand -hex 32
+  secret_key: "<64 hex characters>"
+  limiter: false
+  image_proxy: true
 ```
+
+Generate the key with:
+
+```bash
+openssl rand -hex 32
+```
+
+`limiter: false` is acceptable only because the service binds to `127.0.0.1`. If you
+expose SearXNG beyond loopback, enable the limiter and put authentication and TLS in
+front of it. `image_proxy: true` proxies remote images through SearXNG, which hides
+your browser's address from image hosts at the cost of extra traffic through the
+server.
 
 ---
 
-## 🔧 **OPENCLAW CONFIGURATION**
+## OpenClaw configuration
 
-### Plugin Configuration
+### Plugin block used by this repository
 
-Edit `~/.openclaw/openclaw.json`:
+The bundled `configure-openclaw.sh` writes this block for the `searxng-search`
+plugin:
 
 ```json
 {
@@ -103,41 +201,39 @@ Edit `~/.openclaw/openclaw.json`:
 }
 ```
 
-### Configuration Options
+| Option | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `baseUrl` | string | `http://localhost:8080` | SearXNG base URL |
+| `timeoutMs` | number | `60000` | Request timeout in milliseconds |
+| `defaultCount` | number | `100` | Results requested per search |
+| `enableMultiPage` | boolean | `true` | Allow multi-page retrieval |
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `baseUrl` | string | `"http://localhost:8080"` | SearXNG instance URL |
-| `timeoutMs` | number | `60000` | Request timeout (ms) |
-| `defaultCount` | number | `100` | Default results to fetch |
-| `enableMultiPage` | boolean | `true` | Enable multi-page search |
+These keys are specific to the plugin this project was built around. Check that your
+installed plugin accepts them; `openclaw doctor` reports unknown keys.
 
-### Memory Search Enhancement
+### Built-in SearXNG provider (newer OpenClaw)
 
-```json
+OpenClaw 2026.6.9+ documents SearXNG as a built-in `web_search` provider. Its
+configuration shape is different:
+
+```json5
 {
-  "agents": {
-    "defaults": {
-      "memorySearch": {
-        "provider": "openai",
-        "remote": {
-          "baseUrl": "https://openrouter.ai/api/v1"
-        },
-        "model": "qwen/qwen3-embedding-8b",
-        "query": {
-          "hybrid": {
-            "enabled": true,
-            "vectorWeight": 0.7,
-            "textWeight": 0.3,
-            "candidateMultiplier": 4,
-            "mmr": {
-              "enabled": true,
-              "lambda": 0.7
-            },
-            "temporalDecay": {
-              "enabled": true,
-              "halfLifeDays": 30
-            }
+  tools: {
+    web: {
+      search: {
+        provider: "searxng",
+        maxResults: 10,
+        timeoutSeconds: 60
+      }
+    }
+  },
+  plugins: {
+    entries: {
+      searxng: {
+        config: {
+          webSearch: {
+            baseUrl: "http://127.0.0.1:8080",
+            language: "en"
           }
         }
       }
@@ -146,277 +242,168 @@ Edit `~/.openclaw/openclaw.json`:
 }
 ```
 
----
+Notes from the OpenClaw documentation:
 
-## ⚡ **PERFORMANCE OPTIMIZATION**
+- The plugin is installed with `openclaw plugins install @openclaw/searxng-plugin`.
+- `baseUrl` lives under `plugins.entries.searxng.config.webSearch`.
+- A per-call `count` accepts 1–10 results.
+- `http://` base URLs must target a private or loopback host; public hosts require
+  `https://`.
+- SearXNG must expose `format=json`.
 
-### For Low-Resource Systems (< 2GB RAM)
+Use one integration style at a time. Do not configure both `searxng-search` and the
+built-in `searxng` provider unless you have verified that your OpenClaw release
+supports both without conflict.
 
-```yaml
-# /etc/searxng/settings.yml
-outgoing:
-  pool_connections: 50
-  pool_maxsize: 25
-  
-server:
-  max_request_timeout: 20.0
-```
+### Context management
 
-### For High-Performance Systems (> 4GB RAM)
-
-```yaml
-# /etc/searxng/settings.yml
-outgoing:
-  pool_connections: 200
-  pool_maxsize: 100
-  
-redis:
-  url: "redis://localhost:6379/0"
-  # Add Redis configuration for better caching
-```
-
-### OpenClaw Context Management
+Large search payloads can crowd an agent's context window. If you see context
+overflow, lower the result count for the plugin/provider and keep compaction enabled:
 
 ```json
 {
-  "compaction": {
-    "reserveTokensFloor": 80000,
-    "softThresholdTokens": 15000
-  },
-  "contextPruning": {
-    "mode": "cache-ttl",
-    "ttl": "6h",
-    "keepLastAssistants": 5
+  "agents": {
+    "defaults": {
+      "compaction": {
+        "reserveTokensFloor": 80000,
+        "memoryFlush": {
+          "enabled": true,
+          "softThresholdTokens": 15000
+        }
+      },
+      "contextPruning": {
+        "mode": "cache-ttl",
+        "ttl": "6h",
+        "keepLastAssistants": 5
+      }
+    }
   }
 }
 ```
 
----
-
-## 🎯 **ENGINE CONFIGURATION**
-
-### Recommended Engines
-
-```yaml
-engines:
-  # General Search
-  - name: google
-    engine: google
-    shortcut: g
-    disabled: false
-    
-  - name: duckduckgo
-    engine: duckduckgo
-    shortcut: d
-    disabled: false
-    
-  - name: brave
-    engine: brave
-    shortcut: b
-    disabled: false
-
-  # Knowledge
-  - name: wikipedia
-    engine: wikipedia
-    shortcut: w
-    disabled: false
-
-  # Code
-  - name: github
-    engine: github
-    shortcut: gh
-    disabled: false
-
-  # Video
-  - name: youtube
-    engine: youtube
-    shortcut: yt
-    disabled: false
-
-  # News
-  - name: google news
-    engine: google_news
-    shortcut: gn
-    disabled: false
-```
-
-### Disable Slow Engines
-
-```yaml
-engines:
-  - name: some_slow_engine
-    engine: some_slow_engine
-    disabled: true  # Disable slow engines
-```
+These are OpenClaw agent settings, not SearXNG settings. Confirm the key names
+against the docs for your OpenClaw version.
 
 ---
 
-## 🔒 **SECURITY CONFIGURATION**
+## Monitoring
 
-### Firewall Rules (UFW)
-
-```bash
-# Allow only localhost
-sudo ufw allow from 127.0.0.1 to any port 8080
-
-# If accessing from LAN (not recommended)
-sudo ufw allow from 192.168.1.0/24 to any port 8080
-```
-
-### Redis Security
-
-```bash
-# Edit Redis config
-sudo nano /etc/redis/redis.conf
-
-# Add these lines:
-bind 127.0.0.1
-requirepass YOUR_STRONG_PASSWORD
-```
-
-Update SearXNG config:
-```yaml
-redis:
-  url: "redis://:YOUR_STRONG_PASSWORD@localhost:6379/0"
-```
-
----
-
-## 📊 **MONITORING CONFIGURATION**
-
-### Enable Metrics
+Enable metrics in `settings.yml`:
 
 ```yaml
 general:
   enable_metrics: true
 ```
 
-Access metrics:
-```bash
-curl http://localhost:8080/stats
-```
-
-### Systemd Service Monitoring
+Check service health:
 
 ```bash
-# Check status
 sudo systemctl status searxng
-
-# View logs
 sudo journalctl -u searxng -f
-
-# Auto-restart on failure
-# Already configured in searxng.service:
-# Restart=always
-# RestartSec=10
+redis-cli ping
+curl -s "http://127.0.0.1:8080/search?q=test&format=json" | jq '.unresponsive_engines'
 ```
+
+The JSON response's `unresponsive_engines` array is the quickest way to see which
+upstream engines failed for a query.
 
 ---
 
-## ✅ **CONFIGURATION VERIFICATION**
-
-### Test Configuration
+## Verification
 
 ```bash
-# Validate YAML syntax
+# YAML syntax
 python3 -c "import yaml; yaml.safe_load(open('/etc/searxng/settings.yml'))"
 
-# Check Redis connection
+# Redis
 redis-cli ping
 
-# Test service
+# SearXNG
 sudo systemctl restart searxng
-sudo systemctl status searxng
-```
+sudo systemctl is-active searxng
 
-### Test API Endpoints
+# JSON API
+curl -s "http://127.0.0.1:8080/search?q=test&format=json" | jq '.results | length'
 
-```bash
-# Basic search
-curl "http://localhost:8080/search?q=test&format=json" | jq '.results | length'
-
-# Multi-page search
-curl "http://localhost:8080/search?q=python&format=json&pageno=2" | jq '.results | length'
+# Page 2
+curl -s "http://127.0.0.1:8080/search?q=python&format=json&pageno=2" | jq '.results | length'
 
 # Category search
-curl "http://localhost:8080/search?q=code&categories=it&format=json" | jq '.results | length'
-```
+curl -s "http://127.0.0.1:8080/search?q=code&categories=it&format=json" | jq '.results | length'
 
-### Test OpenClaw Integration
-
-```bash
-# Check plugin loaded
-openclaw doctor 2>&1 | grep searxng
-
-# Test search via Telegram
-# Send to bot: "Search for Python tutorials using SearXNG"
+# OpenClaw
+openclaw doctor 2>&1 | grep -i searxng
 ```
 
 ---
 
-## 🐛 **COMMON CONFIGURATION ISSUES**
+## Redis security
 
-### Issue: JSON API returns HTML
+Redis binds to loopback by default on Ubuntu and Debian. For a single-user host that
+is usually sufficient. To add a password:
 
-**Solution:** Check formats in settings.yml
-```yaml
-search:
-  formats:
-    - html
-    - json  # Must include json!
-```
-
-### Issue: No results returned
-
-**Solution:** Check engines are enabled
 ```bash
-curl http://localhost:8080/stats | jq '.engines'
+sudo nano /etc/redis/redis.conf
 ```
 
-### Issue: Timeout errors
+```conf
+bind 127.0.0.1
+requirepass <generate-a-strong-password>
+```
 
-**Solution:** Increase timeouts
+Then update SearXNG:
+
 ```yaml
-outgoing:
-  request_timeout: 20.0
-  max_request_timeout: 60.0
+redis:
+  url: "redis://:<generate-a-strong-password>@localhost:6379/0"
 ```
 
-### Issue: Redis connection error
+Restart both services:
 
-**Solution:** Start Redis
 ```bash
-sudo systemctl start redis-server
-sudo systemctl enable redis-server
+sudo systemctl restart redis-server
+sudo systemctl restart searxng
 ```
+
+Do not reuse the SearXNG `secret_key` as the Redis password.
 
 ---
 
-## 📝 **CONFIGURATION CHECKLIST**
+## Firewall
+
+SearXNG is loopback-only, so no inbound firewall rule is required. If you deliberately
+expose it on a LAN, allow only the specific subnet and understand that there is no
+authentication:
+
+```bash
+sudo ufw allow from 192.168.1.0/24 to any port 8080 proto tcp
+```
+
+Do not expose port 6379 (Redis) or 8080 directly to the internet.
+
+---
+
+## Configuration checklist
 
 - [ ] `search.formats` includes `json`
-- [ ] `server.secret_key` is changed
-- [ ] `redis.url` is configured
-- [ ] `server.limiter` is false (for local)
+- [ ] `server.secret_key` is set to a random value
 - [ ] `server.bind_address` is `127.0.0.1`
-- [ ] Required engines are enabled
-- [ ] Timeouts are appropriate
-- [ ] OpenClaw plugin configured
-- [ ] Service restarts successfully
-- [ ] JSON API returns results
-- [ ] Multi-page search works
+- [ ] `server.limiter` is `false` only while loopback-bound
+- [ ] `redis.url` points at the local Redis instance
+- [ ] Required engines are enabled and slow/unused engines are disabled
+- [ ] `outgoing.max_request_timeout` is under `outgoing`, not `server`
+- [ ] OpenClaw uses one plugin/provider configuration, not both
+- [ ] `openclaw doctor` reports no invalid keys
+- [ ] `curl ...&format=json` returns results
+- [ ] Page 2 returns results for an engine that supports pagination
 
 ---
 
-## 🎯 **NEXT STEPS**
+## Next steps
 
-After configuration:
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — common failures and fixes
+- [SECURITY.md](SECURITY.md) — threat model and hardening
+- [Documentation site](https://searxng.danubelabs.net) — install, usage, maintenance
+- [OpenClaw SearXNG provider docs](https://docs.openclaw.ai/tools/searxng-search)
 
-1. **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues
-2. **[PERFORMANCE.md](docs/PERFORMANCE.md)** - Performance tuning
-3. **[SECURITY.md](docs/SECURITY.md)** - Security hardening
-
----
-
-**Last Updated:** 2026-02-24  
-**Configuration Time:** 10 minutes
+**Configuration time:** about 10 minutes.

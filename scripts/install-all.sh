@@ -6,7 +6,7 @@ set -e
 
 echo "=========================================="
 echo "  SearXNG + OpenClaw Complete Setup"
-echo "  Version 1.0.0"
+echo "  Version 1.1.0"
 echo "=========================================="
 echo ""
 
@@ -46,7 +46,7 @@ log_info "Detected: $PRETTY_NAME"
 log_step "[1/8] Installing dependencies..."
 apt update
 apt install -y python3 python3-pip python3-venv redis-server \
-    build-essential libxslt-dev zlib1g-dev libffi-dev libssl-dev \
+    build-essential libxslt1-dev zlib1g-dev libffi-dev libssl-dev \
     git curl wget jq
 
 if ! command -v redis-server &> /dev/null; then
@@ -76,9 +76,9 @@ sudo -u searxng -i << 'EOF'
 cd /usr/local/searxng
 if [ ! -d "searxng-src" ]; then
     git clone https://github.com/searxng/searxng.git searxng-src
-    log_info "Repository cloned"
+    echo "[INFO] Repository cloned"
 else
-    log_info "Repository already exists"
+    echo "[INFO] Repository already exists"
 fi
 EOF
 
@@ -88,9 +88,9 @@ sudo -u searxng -i << 'EOF'
 cd /usr/local/searxng
 if [ ! -d "searx-pyenv" ]; then
     python3 -m venv searx-pyenv
-    log_info "Virtualenv created"
+    echo "[INFO] Virtualenv created"
 else
-    log_info "Virtualenv already exists"
+    echo "[INFO] Virtualenv already exists"
 fi
 source /usr/local/searxng/searx-pyenv/bin/activate
 pip install --upgrade pip setuptools wheel pyyaml
@@ -107,15 +107,29 @@ log_info "SearXNG installed"
 
 # Step 6: Configure settings
 log_step "[6/8] Configuring SearXNG..."
-if [ ! -f "/etc/searxng/settings.yml" ]; then
-    sudo -u searxng cp /usr/local/searxng/searxng-src/utils/templates/etc/searxng/settings.yml /etc/searxng/settings.yml
-fi
+if [ -f "/etc/searxng/settings.yml" ]; then
+    SETTINGS_BACKUP="/etc/searxng/settings.yml.bak.$(date +%Y%m%d-%H%M%S)"
+    cp /etc/searxng/settings.yml "$SETTINGS_BACKUP"
+    log_warn "Existing settings preserved; backup written to $SETTINGS_BACKUP"
+    log_warn "Edit /etc/searxng/settings.yml manually if you need to apply the new defaults"
+else
+    # Generate secret key
+    SECRET_KEY=$(openssl rand -hex 32)
 
-# Generate secret key
-SECRET_KEY=$(openssl rand -hex 32)
+    # Create optimized configuration
+    cat > /etc/searxng/settings.yml << SETTINGS
+# Merge with SearXNG's defaults, but keep only these engines
+use_default_settings:
+  engines:
+    keep_only:
+      - google
+      - duckduckgo
+      - brave
+      - bing
+      - wikipedia
+      - github
+      - youtube
 
-# Create optimized configuration
-cat > /etc/searxng/settings.yml << SETTINGS
 general:
   debug: false
   instance_name: "SearXNG"
@@ -187,6 +201,7 @@ engines:
     shortcut: yt
     disabled: false
 SETTINGS
+fi
 
 chown searxng:searxng /etc/searxng/settings.yml
 log_info "SearXNG configured"
@@ -208,8 +223,8 @@ log_step "[8/8] Creating systemd service..."
 cat > /etc/systemd/system/searxng.service << 'SERVICE'
 [Unit]
 Description=SearXNG Privacy-Respecting Metasearch Engine
-After=network.target redis.service
-Wants=redis.service
+After=network.target redis-server.service
+Wants=redis-server.service
 
 [Service]
 Type=simple
@@ -273,14 +288,11 @@ fi
 
 # Check OpenClaw integration
 if command -v openclaw &>/dev/null; then
-    log_info "OpenClaw detected, configuring..."
-    
-    # Backup config
-    cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.backup
-    
-    # Note: Full OpenClaw configuration would go here
-    log_info "OpenClaw configuration backed up"
-    log_warn "⚠️  Please manually configure OpenClaw plugin (see CONFIGURATION.md)"
+    log_info "OpenClaw detected"
+    log_warn "The SearXNG service is ready, but the OpenClaw plugin is configured separately."
+    log_info "Run this as your OpenClaw user (not with sudo):"
+    log_info "  bash scripts/configure-openclaw.sh"
+    log_info "Then verify with: openclaw doctor 2>&1 | grep searxng"
 fi
 
 echo ""
@@ -308,7 +320,7 @@ fi
 echo ""
 echo "Next steps:"
 echo "  1. Test SearXNG: curl \"http://localhost:8080/search?q=test&format=json\" | jq '.'"
-echo "  2. Configure OpenClaw: See CONFIGURATION.md"
+echo "  2. Configure OpenClaw (as your user): bash scripts/configure-openclaw.sh"
 echo "  3. Run tests: bash scripts/test-setup.sh"
 echo "=========================================="
 

@@ -1,295 +1,274 @@
-# 🔍 SearXNG + OpenClaw Complete Setup
+# SearXNG + OpenClaw Complete Setup
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%2B-orange)](https://ubuntu.com)
-[![OpenClaw](https://img.shields.io/badge/OpenClaw-2026.2.23%2B-green)](https://openclaw.ai)
-[![Stars](https://img.shields.io/github/stars/YOUR_USERNAME/searxng-openclaw-complete)](https://github.com/YOUR_USERNAME/searxng-openclaw-complete/stargazers)
+[![License: MIT](https://img.shields.io/badge/license-MIT-4ee1c1.svg)](LICENSE)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%2B-E95420?logo=ubuntu&logoColor=white)](INSTALL.md)
+[![Debian](https://img.shields.io/badge/Debian-11%2B-A81D33?logo=debian&logoColor=white)](INSTALL.md)
+[![OpenClaw](https://img.shields.io/badge/OpenClaw-2026.2.23%20tested-6cb6ff)](https://openclaw.ai)
+[![Docs](https://img.shields.io/badge/docs-searxng.danubelabs.net-4ee1c1)](https://searxng.danubelabs.net)
+[![Site build](https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/actions/workflows/site.yml/badge.svg)](https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/actions/workflows/site.yml)
 
-> **Unlimited, privacy-respecting search for OpenClaw with 70+ search engines. Zero API costs. One-command installation.**
+**Documentation site: [searxng.danubelabs.net](https://searxng.danubelabs.net)**
+
+Self-hosted, privacy-respecting web search for OpenClaw. This repository installs a
+local SearXNG instance, enables its JSON API, connects it to Redis for caching, and
+provides the configuration and scripts needed to use it as an OpenClaw search
+provider — without a commercial search API key.
+
+SearXNG ships with 70+ built-in engines. The installer enables seven of them
+(Google, DuckDuckGo, Brave, Bing, Wikipedia, GitHub, YouTube); you can enable more
+in `settings.yml`. SearXNG's `pageno` parameter supports multi-page result retrieval.
 
 ---
 
-## ⚡ Quick Start (5 Minutes)
+## Quick start
+
+Requirements: Ubuntu 20.04+ or Debian 11+, `sudo`, and an OpenClaw installation if
+you want the agent integration. Windows users can run this inside WSL2 with an
+Ubuntu distribution.
 
 ```bash
-# Clone repository
-git clone https://github.com/YOUR_USERNAME/searxng-openclaw-complete
-cd searxng-openclaw-complete
+# 1. Clone
+git clone https://github.com/FiredMosquito831/searxng-openclaw-complete-setup.git
+cd searxng-openclaw-complete-setup
 
-# Run automated installer
+# 2. Install SearXNG, Redis, and the systemd unit
 sudo bash scripts/install-all.sh
 
-# Test installation
+# 3. Configure the OpenClaw plugin (run as your OpenClaw user, without sudo)
+bash scripts/configure-openclaw.sh
+
+# 4. Verify
 bash scripts/test-setup.sh
 ```
 
-**That's it!** You now have unlimited search in OpenClaw.
+The installer does **not** configure OpenClaw. Step 3 does. If OpenClaw is not
+installed, SearXNG still works at `http://127.0.0.1:8080` and the test suite marks
+the OpenClaw checks as warnings.
+
+### OpenClaw plugin compatibility
+
+`configure-openclaw.sh` writes a `plugins.entries["searxng-search"]` block, which is
+the configuration used by the plugin this project was built around (OpenClaw
+2026.2.x). Newer OpenClaw releases also ship SearXNG as a built-in provider with a
+different config shape (`tools.web.search.provider` and
+`plugins.entries.searxng.config.webSearch.baseUrl`). See
+[Configuration](https://searxng.danubelabs.net/configuration/) for both forms and
+check `openclaw doctor` after changing provider settings.
 
 ---
 
-## ✨ Features
+## What you get
 
-| Feature | Benefit |
-|---------|---------|
-| 🚀 **Unlimited Searches** | No API rate limits or quotas |
-| 💰 **$0 Monthly Cost** | Save $3-10/month on API fees |
-| 🔒 **Complete Privacy** | No tracking, no logging |
-| 🌐 **70+ Search Engines** | Google, DuckDuckGo, Brave, Bing, Wikipedia, GitHub, YouTube & more |
-| 📄 **Multi-Page Search** | Get 100-300+ results per query |
-| ⚙️ **Auto-Start** | Runs automatically on boot |
-| 🛠️ **Easy Maintenance** | Automated update scripts |
+| Piece | Detail |
+| --- | --- |
+| SearXNG | Local instance on `127.0.0.1:8080`, HTML UI and `format=json` API |
+| Redis | Local cache at `redis://localhost:6379/0` |
+| systemd unit | `searxng.service`, starts on boot and restarts on failure |
+| OpenClaw config | Backs up `openclaw.json`, adds the search plugin, validates and restarts the gateway |
+| Multi-page search | Native SearXNG `pageno` support; the plugin template requests 100 results |
+| Scripts | Install, configure, test, update, backup, restore helper, uninstall |
+| Documentation | Install, configuration, usage, maintenance, security, troubleshooting, FAQ |
 
 ---
 
-## 🎯 What You Get
+## Architecture
 
+```text
+Telegram / CLI / other channel
+              |
+              v
+     OpenClaw gateway
+              |
+              v
+   searxng-search plugin
+              |
+              |  HTTP + JSON over loopback
+              v
+   SearXNG  127.0.0.1:8080  <---->  Redis 127.0.0.1:6379
+              |
+              +--> Google
+              +--> DuckDuckGo
+              +--> Brave
+              +--> Bing
+              +--> Wikipedia
+              +--> GitHub
+              +--> YouTube
 ```
-✅ Local SearXNG instance (http://localhost:8080)
-✅ Redis cache for performance
-✅ OpenClaw searxng-search plugin configured
-✅ Multi-page search (100-300+ results)
-✅ Systemd services (auto-start on boot)
-✅ Monitoring & backup scripts
-✅ Complete documentation
-✅ $0/month search costs
-```
+
+SearXNG is bound to loopback only. It is not a public search engine, and there is no
+authentication or TLS in front of it by default (see [Security](#security)).
 
 ---
 
-## 📖 Documentation
-
-| Document | Description |
-|----------|-------------|
-| **[INSTALL.md](INSTALL.md)** | Detailed installation guide |
-| **[CONFIGURATION.md](CONFIGURATION.md)** | Configuration options & tuning |
-| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | Common issues & solutions |
-| **[FAQ.md](FAQ.md)** | Frequently asked questions |
-| **[PERFORMANCE.md](docs/PERFORMANCE.md)** | Performance optimization |
-| **[SECURITY.md](docs/SECURITY.md)** | Security hardening |
-
----
-
-## 🚀 Installation Methods
-
-### Method 1: Automated (Recommended)
+## Verify the installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/searxng-openclaw-complete
-cd searxng-openclaw-complete
-sudo bash scripts/install-all.sh
-```
-
-### Method 2: Manual
-
-See **[INSTALL.md](INSTALL.md)** for step-by-step manual installation.
-
-### Method 3: Docker (Coming Soon)
-
-```bash
-docker-compose up -d
-```
-
----
-
-## ✅ Verify Installation
-
-```bash
-# Run test suite
-bash scripts/test-setup.sh
-
-# Test SearXNG
-curl "http://localhost:8080/search?q=test&format=json" | jq '.results | length'
-
-# Test OpenClaw integration
-openclaw doctor 2>&1 | grep searxng
-
-# Check services
+# Service state
 sudo systemctl status searxng
-systemctl --user status openclaw-gateway.service
+redis-cli ping
+
+# JSON API (expects a positive result count; engines can be rate-limited)
+curl -s "http://127.0.0.1:8080/search?q=test&format=json" | jq '.results | length'
+
+# Which upstream engines did not answer
+curl -s "http://127.0.0.1:8080/search?q=test&format=json" | jq '.unresponsive_engines'
+
+# OpenClaw plugin visibility
+openclaw doctor 2>&1 | grep -i searxng
+
+# Full test suite
+bash scripts/test-setup.sh
 ```
 
-**Expected:** All checks pass ✅
+The test suite treats a missing OpenClaw installation or an undetected plugin as a
+warning, not a failure, so you can validate a standalone SearXNG deployment.
 
 ---
 
-## 🎯 Usage Examples
+## Usage
 
-### Basic Search (via Telegram)
+Ask your OpenClaw agent in natural language:
 
-Send to your OpenClaw bot:
-```
-Search for Python tutorials using SearXNG
-```
-
-### Multi-Page Search (100+ Results)
-
-```
-Search for AI developments with 100 results
-Search for coding tutorials with 5 pages
+```text
+Search for Rust async programming using SearXNG
+Search for AI policy news with time_range: month
+Search for Python packaging with categories: it,science
 ```
 
-### Advanced Search
-
-```
-Search for Rust programming with categories: it,science
-Search for climate change news with time_range: month
-```
-
----
-
-## 📊 Performance Metrics
-
-| Metric | Value |
-|--------|-------|
-| **Search Latency** | 2-5 seconds |
-| **Results per Page** | 20-40 |
-| **Max Pages** | 10 (200-400 results) |
-| **Memory Usage** | 200-500MB |
-| **Disk Usage** | 1-2GB |
-| **CPU Usage** | 10-30% (during search) |
-
----
-
-## 🆚 Comparison
-
-| Feature | Brave API | Google API | **SearXNG (This)** |
-|---------|-----------|------------|-------------------|
-| **Monthly Cost** | $3-10 | $5-20 | **$0** |
-| **Search Limit** | 2,000/mo | 100/day | **UNLIMITED** |
-| **Engines** | 1 | 1 | **70+** |
-| **Privacy** | ❌ Tracked | ❌ Tracked | **✅ Private** |
-| **Setup Time** | 5 min | 10 min | **20 min** |
-| **Maintenance** | None | None | **Low** |
-
----
-
-## 🛠️ Maintenance
-
-### Update SearXNG
+Query the API directly:
 
 ```bash
-bash scripts/update-searxng.sh
+# Basic JSON search
+curl -s "http://127.0.0.1:8080/search?q=python&format=json" | jq '.results[] | {title, url}'
+
+# Page 2
+curl -s "http://127.0.0.1:8080/search?q=python&format=json&pageno=2" | jq '.results | length'
+
+# Category filter
+curl -s "http://127.0.0.1:8080/search?q=rust&categories=it&format=json" | jq '.results | length'
 ```
 
-### Backup Configuration
-
-```bash
-bash scripts/backup-searxng.sh
-```
-
-### Check Status
-
-```bash
-bash scripts/check-status.sh
-```
-
-### View Logs
-
-```bash
-# SearXNG logs
-sudo journalctl -u searxng -f
-
-# OpenClaw logs
-journalctl --user -u openclaw-gateway.service -f
-```
+Result counts depend on which engines answer and whether upstream engines rate-limit
+your server. Multi-page retrieval is a SearXNG API feature; the bundled plugin
+template enables it. OpenClaw's built-in provider caps a single `count` argument at
+10 results and exposes `pageno` only through the SearXNG API, not through a
+multi-page plugin option.
 
 ---
 
-## 🤝 Contributing
+## Documentation
 
-Contributions are welcome! Please see:
-- **[CONTRIBUTING.md](.github/CONTRIBUTING.md)** - How to contribute
-- **[CODE_OF_CONDUCT.md](.github/CODE_OF_CONDUCT.md)** - Community guidelines
-
-### Ways to Contribute:
-- 🐛 Report bugs
-- 💡 Suggest features
-- 📝 Improve documentation
-- 🔧 Submit pull requests
-- ⭐ Star this repository
+| Document | Contents |
+| --- | --- |
+| [Documentation site](https://searxng.danubelabs.net) | Install, configuration, usage, maintenance, security, troubleshooting, FAQ |
+| [INSTALL.md](INSTALL.md) | Automated and manual installation, step by step |
+| [CONFIGURATION.md](CONFIGURATION.md) | SearXNG settings, engines, Redis, OpenClaw config, tuning |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common failures and fixes |
+| [FAQ.md](FAQ.md) | 30+ questions about cost, privacy, installation, and limits |
+| [SECURITY.md](SECURITY.md) | Threat model, prompt-injection boundaries, hardening |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Development, site build, and PR workflow |
+| [CHANGELOG.md](CHANGELOG.md) | Release history |
+| [REPOSITORY_SUMMARY.md](REPOSITORY_SUMMARY.md) | File map, data flow, and script reference |
+| [FINAL_100_PERCENT_COMPLETE.md](FINAL_100_PERCENT_COMPLETE.md) | Verified scope and explicit non-goals |
 
 ---
 
-## 📋 Requirements
+## Requirements
 
 | Requirement | Minimum | Recommended |
-|-------------|---------|-------------|
-| **OS** | Ubuntu 20.04 | Ubuntu 22.04+ |
-| **RAM** | 512MB | 2GB |
-| **Disk** | 1GB | 5GB |
-| **CPU** | 1 core | 2+ cores |
-| **Network** | Required | Broadband |
+| --- | --- | --- |
+| OS | Ubuntu 20.04 / Debian 11 | Ubuntu 22.04+ |
+| RAM | 512 MB | 2 GB |
+| Disk | 1 GB | 5 GB |
+| CPU | 1 core | 2+ cores |
+| Network | Outbound HTTPS to search engines | Broadband |
+| Access | `sudo` | — |
+| Agent | OpenClaw (optional for standalone SearXNG) | OpenClaw with a SearXNG plugin |
+
+The installer refuses to run on distributions other than Ubuntu and Debian. It has
+been tested on Ubuntu 22.04 under WSL2 with OpenClaw 2026.2.23. Other Debian-derived
+systems may work but are not covered by the scripts.
 
 ---
 
-## 🆘 Support
+## Security
 
-### Get Help
+- SearXNG binds to `127.0.0.1` and Redis binds to loopback. Do not expose either port
+  to the internet without adding TLS, authentication, and rate limiting.
+- No commercial search API keys are used or stored. The SearXNG `secret_key` is
+  generated with `openssl rand -hex 32`.
+- OpenClaw treats web search results as untrusted external content. It wraps results
+  in `<<<EXTERNAL_UNTRUSTED_CONTENT ...>>>` boundary markers and strips chat-template
+  special tokens before the model sees them. That protection does not replace
+  allowlists, exec approvals, sandboxing, or channel policy; see
+  [SECURITY.md](SECURITY.md) and the
+  [OpenClaw prompt-injection guide](https://docs.openclaw.ai/gateway/security/prompt-injection).
+- Upstream engines still see requests from your server's IP address. SearXNG does not
+  log queries or create profiles, but it is not an anonymity network.
+- The scripts are designed for a single-user local deployment. Read them before
+  running them on a shared host.
 
-- 📖 Read **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**
-- 💬 Ask in **[GitHub Discussions](https://github.com/YOUR_USERNAME/searxng-openclaw-complete/discussions)**
-- 🐛 Report issues: **[GitHub Issues](https://github.com/YOUR_USERNAME/searxng-openclaw-complete/issues)**
+For vulnerability reporting, see [SECURITY.md](SECURITY.md).
 
-### Common Commands
+---
+
+## Maintenance
 
 ```bash
-# Restart SearXNG
-sudo systemctl restart searxng
+# Update SearXNG from its current branch (creates a backup first)
+sudo bash scripts/update-searxng.sh
 
-# Restart OpenClaw
+# Back up /etc/searxng, the systemd unit, and openclaw.json
+bash scripts/backup-searxng.sh
+
+# Logs
+sudo journalctl -u searxng -f
+journalctl --user -u openclaw-gateway.service -f
+
+# Restart after a config change
+sudo systemctl restart searxng
 systemctl --user restart openclaw-gateway.service
 
-# Test API
-curl "http://localhost:8080/search?q=test&format=json" | jq '.'
-
-# Check logs
-sudo journalctl -u searxng -n 50
+# Remove everything (interactive)
+sudo bash scripts/uninstall.sh
 ```
 
----
-
-## 📄 License
-
-This project is licensed under the **[MIT License](LICENSE)**.
-
-```
-Copyright (c) 2026 YOUR_NAME
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files...
-```
+Backups are written to `~/searxng-backups/` as timestamped `.tar.gz` archives with
+an embedded `restore.sh`.
 
 ---
 
-## 🙏 Acknowledgments
+## Scope and non-goals
 
-- **[SearXNG](https://github.com/searxng/searxng)** - Privacy-respecting metasearch engine
-- **[OpenClaw](https://openclaw.ai)** - Open-source AI assistant framework
-- **[Redis](https://redis.io)** - In-memory data store
+This repository is deliberately a local, scripted deployment. The following are
+**not** implemented and are not advertised as available:
 
----
+- Docker Compose or container deployment.
+- A reverse proxy, TLS termination, or authentication for SearXNG.
+- Hardening for a public or multi-tenant SearXNG instance.
+- A packaged OpenClaw plugin; the repo configures an existing plugin/provider.
+- A benchmark suite. No latency, memory, or result-count guarantee is made beyond
+  the requirements table.
+- Fedora, RHEL, Arch, or macOS installers. The scripts reject non-Ubuntu/Debian
+  distributions.
 
-## 📊 Repository Stats
-
-![GitHub stars](https://img.shields.io/github/stars/YOUR_USERNAME/searxng-openclaw-complete?style=social)
-![GitHub forks](https://img.shields.io/github/forks/YOUR_USERNAME/searxng-openclaw-complete?style=social)
-![GitHub issues](https://img.shields.io/github/issues/YOUR_USERNAME/searxng-openclaw-complete)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/YOUR_USERNAME/searxng-openclaw-complete)
-![License](https://img.shields.io/github/license/YOUR_USERNAME/searxng-openclaw-complete)
-
----
-
-## 🚀 Quick Links
-
-- **[Installation Guide](INSTALL.md)** - Get started in 20 minutes
-- **[Configuration](CONFIGURATION.md)** - Optimize your setup
-- **[Troubleshooting](TROUBLESHOOTING.md)** - Fix common issues
-- **[FAQ](FAQ.md)** - Common questions answered
+See [FINAL_100_PERCENT_COMPLETE.md](FINAL_100_PERCENT_COMPLETE.md) for the verified
+scope.
 
 ---
 
-**Made with ❤️ for the privacy-conscious community**
+## Contributing
 
-**Last Updated:** 2026-02-24  
-**Version:** 1.0.0  
-**Tested On:** Ubuntu 22.04 (WSL2), OpenClaw 2026.2.23
+Bug reports, documentation fixes, and tested compatibility reports are welcome. Open
+an issue or a pull request; see [CONTRIBUTING.md](CONTRIBUTING.md). The docs site is
+generated from `site/` with `scripts/build_site.py` and validated in CI with
+`python scripts/build_site.py --check`.
+
+## License
+
+[MIT](LICENSE) © 2026 FiredMosquito831
+
+SearXNG and OpenClaw are separate projects with their own licenses and trademarks.
+This repository is not affiliated with either project.
+
+**Version:** 1.1.0 · **Docs site updated:** 2026-10-22

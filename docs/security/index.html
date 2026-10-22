@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security: local-only posture and prompt injection</title>
+  <meta name="description" content="Understand what the SearXNG setup exposes, how OpenClaw wraps untrusted search results, and which hardening steps are left to the operator.">
+  <meta name="keywords" content="SearXNG security, prompt injection, untrusted content, loopback, Redis security, OpenClaw security, privacy">
+  <meta name="author" content="FiredMosquito831">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://searxng.danubelabs.net/security/">
+
+  <meta name="theme-color" content="#070b0f">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="SearXNG + OpenClaw">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="Security: local-only posture and prompt injection">
+  <meta property="og:description" content="Understand what the SearXNG setup exposes, how OpenClaw wraps untrusted search results, and which hardening steps are left to the operator.">
+  <meta property="og:url" content="https://searxng.danubelabs.net/security/">
+  <meta property="og:image" content="https://searxng.danubelabs.net/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="SearXNG + OpenClaw: private, self-hosted search with no API keys.">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Security: local-only posture and prompt injection">
+  <meta name="twitter:description" content="Understand what the SearXNG setup exposes, how OpenClaw wraps untrusted search results, and which hardening steps are left to the operator.">
+  <meta name="twitter:image" content="https://searxng.danubelabs.net/og.png">
+  <meta name="twitter:image:alt" content="SearXNG + OpenClaw documentation">
+
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://searxng.danubelabs.net/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Security",
+      "item": "https://searxng.danubelabs.net/security/"
+    }
+  ]
+}</script>
+</head>
+<body class="page-security">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="mesh-bg" aria-hidden="true">
+    <span class="mesh-node n1"></span>
+    <span class="mesh-node n2"></span>
+    <span class="mesh-node n3"></span>
+    <span class="mesh-node n4"></span>
+    <span class="mesh-node n5"></span>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="SearXNG + OpenClaw documentation home">
+        <svg class="brand-mark" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="14" cy="14" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M20.5 20.5 27 27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="14" cy="14" r="2.4" fill="currentColor"/>
+          <path d="M14 5.5v3M14 19.5v3M5.5 14h3M19.5 14h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-text">searxng<span class="brand-sep">/</span>openclaw</span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="sr-only">Toggle navigation</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/install/">Install</a>
+        <a href="/configuration/">Configure</a>
+        <a href="/usage/">Usage</a>
+        <a href="/maintenance/">Maintain</a>
+        <a href="/security/" aria-current="page">Security</a>
+        <a href="/troubleshooting/">Troubleshooting</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/about/">About</a>
+        <a class="nav-github" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.06-.49.06-.49.81.06 1.23.83 1.23.83.72 1.23 1.89.88 2.35.67.07-.52.28-.88.51-1.08-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow"><span class="eyebrow-dot"></span>Security</p>
+    <h1>Local by default. Explicit about the edges.</h1>
+    <p class="lede">
+      The supplied deployment is a single-user, loopback-only search backend. It
+      includes process sandboxing and no API credentials, but it does not include TLS,
+      authentication, or a prompt-injection classifier. Those boundaries belong to the
+      reverse proxy and to OpenClaw's agent controls.
+    </p>
+    <ul class="meta-strip" aria-label="Security posture">
+      <li><span>Bind</span><code>127.0.0.1:8080</code></li>
+      <li><span>Service user</span><code>searxng</code></li>
+      <li><span>API keys</span>None</li>
+      <li><span>TLS / auth</span>Not included</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container">
+    <div class="posture-grid">
+      <div class="posture">
+        <span class="posture-status">Loopback</span>
+        <h3>Not reachable remotely</h3>
+        <p>SearXNG and Redis listen on <code>127.0.0.1</code>. The installer does not open a firewall port or configure a public hostname.</p>
+      </div>
+      <div class="posture">
+        <span class="posture-status">Unprivileged</span>
+        <h3>No root service</h3>
+        <p>The unit runs as <code>searxng</code> with <code>NoNewPrivileges</code>, <code>ProtectSystem=strict</code>, <code>ProtectHome</code>, and <code>PrivateTmp</code>.</p>
+      </div>
+      <div class="posture">
+        <span class="posture-status">Keyless</span>
+        <h3>No search credentials</h3>
+        <p>No commercial search API key is stored. The only generated secret is SearXNG's <code>secret_key</code>, created on the host.</p>
+      </div>
+      <div class="posture">
+        <span class="posture-status posture-status-warn">Not public-ready</span>
+        <h3>No auth or TLS</h3>
+        <p>There is no login, certificate, rate limiter, or multi-tenant isolation. Do not expose the port as-is.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Exposure map</p>
+      <h2>What is listening, and who can reach it.</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">Surface</th><th scope="col">Default exposure</th><th scope="col">Data at risk</th><th scope="col">Control</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SearXNG HTTP</td><td><code>127.0.0.1:8080</code></td><td>Queries, cached results, configuration UI</td><td>Loopback bind; add TLS/auth before exposure</td></tr>
+          <tr><td>Redis</td><td><code>127.0.0.1:6379</code></td><td>Cached responses</td><td>Loopback bind; optional <code>requirepass</code></td></tr>
+          <tr><td>systemd unit</td><td>Local root</td><td>Service execution</td><td>Unprivileged user, sandboxing directives</td></tr>
+          <tr><td><code>openclaw.json</code></td><td>User home</td><td>Plugin config, other agent settings</td><td>File permissions; backup handling</td></tr>
+          <tr><td>Backups</td><td>User home</td><td><code>settings.yml</code>, <code>openclaw.json</code>, optional Redis password</td><td>Protect as secrets</td></tr>
+          <tr><td>Outbound requests</td><td>Enabled engines</td><td>Server IP, query text, request timing</td><td>Choose engines; use a network egress policy if needed</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Prompt injection</p>
+      <h2>Search results are data, not instructions.</h2>
+      <p class="section-lede">
+        A result title, snippet, or page can contain text aimed at the model. The
+        relevant protection is the way OpenClaw wraps and sanitizes external content
+        before it enters the context window. This repository keeps that content on the
+        JSON path and on loopback, but it does not replace the agent's tool policy.
+      </p>
+    </div>
+
+    <div class="split">
+      <div>
+        <h3>The boundary layer</h3>
+        <p>OpenClaw places web search and fetch output inside marked untrusted blocks with a random identifier:</p>
+        <div class="codeblock">
+<pre><code>&lt;&lt;&lt;EXTERNAL_UNTRUSTED_CONTENT id="a1b2c3d4e5f60718"&gt;&gt;&gt;
+Source: Web Search
+...result content...
+&lt;&lt;&lt;END_EXTERNAL_UNTRUSTED_CONTENT id="a1b2c3d4e5f60718"&gt;&gt;&gt;</code></pre>
+        </div>
+        <p>The random id makes forged closing markers harder. OpenClaw also strips chat-template special tokens (ChatML, Llama, Gemma, Mistral, Phi, GPT-OSS, and similar) so an attacker cannot forge role boundaries or fake system turns.</p>
+        <p class="micro-note">The sample above illustrates the marker format; the id is generated per block.</p>
+      </div>
+      <div>
+        <h3>What this repository adds</h3>
+        <ul class="check-list">
+          <li>Uses SearXNG's JSON endpoint instead of scraping arbitrary HTML into the agent context.</li>
+          <li>Binds the service to loopback, so remote clients cannot query it directly.</li>
+          <li>Enables a small default engine set, reducing exposure to any one upstream's content.</li>
+          <li>Runs the service unprivileged with systemd sandboxing.</li>
+          <li>Stores no commercial API keys in the repo.</li>
+        </ul>
+        <h3>What it does not do</h3>
+        <ul class="cross-list">
+          <li>It does not classify injected text itself.</li>
+          <li>It does not sandbox tool execution.</li>
+          <li>It does not stop a user pasting hostile content into chat.</li>
+          <li>It does not make the host anonymous to upstream engines.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>Wrapping is one layer, not the whole policy.</strong>
+      <p>OpenClaw's own guidance is to keep external-content wrapping enabled and to pair it with channel allowlists, tool allowlists, exec approvals, sandboxing, and a capable model. The wrapping does not replace those controls.</p>
+      <p><a class="text-link" href="https://docs.openclaw.ai/gateway/security/prompt-injection" rel="noopener">OpenClaw prompt-injection guide <span aria-hidden="true">→</span></a></p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Privacy</p>
+      <h2>Private to your host, not anonymous on the wire.</h2>
+    </div>
+    <div class="split">
+      <div>
+        <p>SearXNG does not log queries, create accounts, or build user profiles by default. Results are cached temporarily in local Redis. That protects you from a search vendor's account-level profiling and keeps the query history on hardware you control.</p>
+        <p>It does not hide your server from the engines. Every enabled engine sees an HTTP request from your host's IP address with the query text. If anonymity is the requirement, this stack is not sufficient; use a network designed for it.</p>
+        <p><code>image_proxy: true</code> proxies remote images through SearXNG, so image hosts see the server rather than the browser. It costs bandwidth and server CPU.</p>
+      </div>
+      <div class="panel">
+        <p class="panel-kicker">Do not claim</p>
+        <h3>Common overstatements</h3>
+        <ul class="cross-list">
+          <li>"No one can see your searches." Upstream engines can.</li>
+          <li>"It is anonymous." It is not a Tor or VPN substitute.</li>
+          <li>"It is secure to expose." The supplied config has no auth or TLS.</li>
+          <li>"It cannot be prompt-injected." No wrapper guarantees that.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Hardening checklist</p>
+      <h2>Keep the default posture, or do the extra work.</h2>
+    </div>
+    <div class="checklist checklist-two">
+      <ul>
+        <li>Keep <code>bind_address: 127.0.0.1</code>; do not port-forward 8080.</li>
+        <li>Keep Redis on loopback; set <code>requirepass</code> if other local users exist.</li>
+        <li>Keep the limiter off only while loopback-bound.</li>
+        <li>Use a generated <code>secret_key</code>; do not reuse the sample.</li>
+        <li>Protect <code>~/searxng-backups</code>; archives can contain secrets.</li>
+        <li>Restrict OpenClaw's <code>exec</code>, <code>browser</code>, <code>web_fetch</code>, and <code>web_search</code> tools to agents that need them.</li>
+        <li>Keep external-content wrapping enabled and leave unsafe-content bypass flags off.</li>
+        <li>Update SearXNG monthly and after engine breakage.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-danger">
+      <strong>Before exposing the service beyond loopback</strong>
+      <p>Add a reverse proxy with TLS, authentication, and request limits. Enable SearXNG's limiter and tune <code>limiter.toml</code>. Restrict inbound traffic with a firewall. Keep Redis private and password-protected. Re-read the SearXNG documentation for the version you run. None of these steps are automated by this repository.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="split">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-dot"></span>Reporting</p>
+        <h2>Found a problem?</h2>
+        <p>Report vulnerabilities privately through GitHub's security advisory flow. Do not open a public issue before a fix is available.</p>
+        <div class="button-row">
+          <a class="btn btn-primary" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/security/advisories/new" rel="noopener">Report a vulnerability</a>
+          <a class="btn btn-ghost" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/SECURITY.md" rel="noopener">Security policy</a>
+        </div>
+      </div>
+      <div class="panel">
+        <p class="panel-kicker">Scope</p>
+        <h3>What belongs here</h3>
+        <p>Scripts, templates, generated site, and documentation in this repository. Report SearXNG, OpenClaw, Redis, systemd, and upstream engine bugs to those projects; this repo can document a mitigation.</p>
+        <p class="small">Include the distribution, OpenClaw version, reproduction steps, and impact. Redact tokens and public IPs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+    <nav class="container page-nav" aria-label="Previous and next pages">
+      <a class="page-nav-link prev" href="/maintenance/">
+        <span class="page-nav-label">Previous</span>
+        <span class="page-nav-title">Maintain</span>
+      </a>
+      <a class="page-nav-link next" href="/troubleshooting/">
+        <span class="page-nav-label">Next</span>
+        <span class="page-nav-title">Troubleshooting</span>
+      </a>
+    </nav>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="/" aria-label="Documentation home">
+          <svg class="brand-mark" width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="14" cy="14" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M20.5 20.5 27 27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="14" cy="14" r="2.4" fill="currentColor"/>
+          </svg>
+          <span class="brand-text">searxng<span class="brand-sep">/</span>openclaw</span>
+        </a>
+        <p>Local, privacy-respecting search for your OpenClaw agent. No search API keys, no per-query bill.</p>
+        <p class="footer-mono">searxng.danubelabs.net</p>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Guide</h2>
+        <ul class="footer-links">
+          <li><a href="/install/">Install</a></li>
+          <li><a href="/configuration/">Configuration</a></li>
+          <li><a href="/usage/">Usage</a></li>
+          <li><a href="/maintenance/">Maintenance</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Reference</h2>
+        <ul class="footer-links">
+          <li><a href="/security/">Security</a></li>
+          <li><a href="/troubleshooting/">Troubleshooting</a></li>
+          <li><a href="/faq/">FAQ</a></li>
+          <li><a href="/about/">About &amp; license</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Project</h2>
+        <ul class="footer-links">
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup" rel="noopener">GitHub repository</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/issues" rel="noopener">Issues</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/CHANGELOG.md" rel="noopener">Changelog</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/LICENSE" rel="noopener">MIT license</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 FiredMosquito831. MIT licensed.</p>
+      <p>Version 1.1.0 · Updated 2026-10-22 · Not affiliated with SearXNG or OpenClaw.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>

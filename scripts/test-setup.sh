@@ -76,7 +76,7 @@ fi
 # Test 7: OpenClaw Plugin
 if command -v openclaw &>/dev/null; then
     echo "[Test 7/8] Checking OpenClaw plugin..."
-    if openclaw doctor 2>&1 | grep -q "searxng-search"; then
+    if openclaw doctor 2>&1 | grep -qi "searxng"; then
         test_pass "SearXNG plugin detected in OpenClaw"
     else
         test_warn "SearXNG plugin NOT detected in OpenClaw"

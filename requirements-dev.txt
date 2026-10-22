@@ -1,0 +1,5 @@
+# Documentation site
+jinja2==3.1.6
+
+# Optional: only needed for `python scripts/build_site.py --og`
+playwright==1.64.1

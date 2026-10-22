@@ -2,6 +2,20 @@
 # Optimized for OpenClaw integration
 # Copy to: /etc/searxng/settings.yml
 
+# Merge with SearXNG's defaults, but keep only these engines
+use_default_settings:
+  engines:
+    keep_only:
+      - google
+      - duckduckgo
+      - brave
+      - bing
+      - wikipedia
+      - github
+      - youtube
+      - google news
+      - duckduckgo news
+
 general:
   debug: false
   instance_name: "SearXNG"

@@ -38,6 +38,7 @@ log_info "Stopping services..."
 systemctl stop searxng.service 2>/dev/null || true
 systemctl disable searxng.service 2>/dev/null || true
 rm -f /etc/systemd/system/searxng.service
+systemctl daemon-reload 2>/dev/null || true
 
 # Remove SearXNG user and directories
 log_info "Removing SearXNG installation..."

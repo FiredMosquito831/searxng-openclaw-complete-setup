@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow"><span class="eyebrow-dot"></span>About</p>
+    <h1>A small setup project with a narrow claim.</h1>
+    <p class="lede">
+      This repository installs and documents a local SearXNG search backend for
+      OpenClaw. It is maintained by {{ author }} at Danube Labs and released under the
+      MIT License.
+    </p>
+    <ul class="meta-strip" aria-label="Project facts">
+      <li><span>Version</span>{{ version }}</li>
+      <li><span>License</span>MIT</li>
+      <li><span>Site</span><code>{{ site_url | replace('https://', '') }}</code></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container">
+    <div class="split">
+      <div>
+        <h2>What the project tries to be</h2>
+        <p>A reproducible install path, a configuration that matches the OpenClaw plugin it targets, and documentation that names its limits. The goal is a search endpoint you can run on a small Linux host and reason about.</p>
+        <h2>What it is not</h2>
+        <ul class="cross-list">
+          <li>A public search engine or a hardened multi-tenant service.</li>
+          <li>A packaged OpenClaw plugin. It configures one.</li>
+          <li>A Docker deployment. That option is not implemented.</li>
+          <li>An anonymity network. Upstream engines see your server's IP.</li>
+          <li>A benchmark or capacity-planning guide. No latency or memory figures are promised.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <p class="panel-kicker">Maintainer</p>
+        <h3>{{ author }} · Danube Labs</h3>
+        <p>The documentation site is published at <a href="{{ site_url }}">{{ site_url | replace('https://', '') }}</a> and generated from this repository.</p>
+        <ul class="footer-links">
+          <li><a href="{{ repo_url }}" rel="noopener">GitHub repository</a></li>
+          <li><a href="{{ repo_url }}/issues" rel="noopener">Issues</a></li>
+          <li><a href="{{ repo_url }}/blob/main/CONTRIBUTING.md" rel="noopener">Contributing</a></li>
+          <li><a href="{{ repo_url }}/blob/main/SECURITY.md" rel="noopener">Security policy</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>License</p>
+      <h2>MIT, without extra conditions.</h2>
+      <p class="section-lede">Copyright &copy; 2026 {{ author }}. The license permits commercial use, modification, distribution, and private use, provided the copyright and permission notice are included.</p>
+    </div>
+    <div class="codeblock">
+<pre><code>MIT License
+
+Copyright (c) 2026 FiredMosquito831
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</code></pre>
+    </div>
+    <p class="small">The canonical license text is <a href="{{ repo_url }}/blob/main/LICENSE">LICENSE</a>. SearXNG and OpenClaw are separate projects with their own licenses and trademarks.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>How this site is built</p>
+      <h2>Generated, checked, and honest about its sources.</h2>
+      <p class="section-lede">
+        The site is a static build from Jinja2 templates in <code>site/</code>. The
+        generator validates internal links, canonical URLs, required metadata, the
+        sitemap, and the absence of known placeholder strings. CI runs the same
+        <code>--check</code> mode.
+      </p>
+    </div>
+    <div class="three-up">
+      <div class="mini-card">
+        <span class="mini-card-index">01</span>
+        <h3>Source</h3>
+        <p>Templates and content live in the repository. The Markdown guides remain the canonical long-form documentation.</p>
+      </div>
+      <div class="mini-card">
+        <span class="mini-card-index">02</span>
+        <h3>Build</h3>
+        <p><code>python scripts/build_site.py</code> writes <code>docs/</code>. <code>--check</code> fails if the committed output is stale.</p>
+      </div>
+      <div class="mini-card">
+        <span class="mini-card-index">03</span>
+        <h3>No fake screenshots</h3>
+        <p>Command blocks contain real commands. The social card is a designed HTML render, not a fabricated screenshot of a running system. Fonts are self-hosted, so reading the docs does not call a third-party font service: <a href="/assets/fonts/LICENSE-Inter.txt">Inter license</a>, <a href="/assets/fonts/LICENSE-IBM-Plex.txt">IBM Plex license</a>.</p>
+      </div>
+    </div>
+    <div class="link-cards">
+      <a class="link-card" href="{{ repo_url }}/blob/main/REPOSITORY_SUMMARY.md" rel="noopener">
+        <span class="link-card-kicker">Technical map</span>
+        <strong>Repository summary</strong>
+        <span>File map, request flow, and script behavior.</span>
+      </a>
+      <a class="link-card" href="{{ repo_url }}/blob/main/FINAL_100_PERCENT_COMPLETE.md" rel="noopener">
+        <span class="link-card-kicker">Scope</span>
+        <strong>Verified scope</strong>
+        <span>What is tested, what requires a Linux host, and what is not implemented.</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="split">
+      <div>
+        <h2>Acknowledgements</h2>
+        <p>SearXNG for the metasearch engine. OpenClaw for the agent and its external-content handling. Redis for the local cache. The Debian and Ubuntu maintainers for the packaging this setup relies on.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <p>Use GitHub issues for bugs and documentation problems. Use the security advisory flow for vulnerabilities. There is no guaranteed response time; this is a volunteer project.</p>
+        <div class="button-row">
+          <a class="btn btn-primary" href="{{ repo_url }}/issues" rel="noopener">Issues</a>
+          <a class="btn btn-ghost" href="{{ repo_url }}/security/advisories/new" rel="noopener">Report a vulnerability</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

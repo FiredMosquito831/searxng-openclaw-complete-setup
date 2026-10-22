@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Configuration: SearXNG, Redis, and OpenClaw</title>
+  <meta name="description" content="Configure SearXNG JSON output, engines, Redis, timeouts, and the OpenClaw search plugin. Includes both plugin configuration shapes.">
+  <meta name="keywords" content="SearXNG configuration, settings.yml, OpenClaw config, Redis, JSON API, search engines, timeouts">
+  <meta name="author" content="FiredMosquito831">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://searxng.danubelabs.net/configuration/">
+
+  <meta name="theme-color" content="#070b0f">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="SearXNG + OpenClaw">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="Configuration: SearXNG, Redis, and OpenClaw">
+  <meta property="og:description" content="Configure SearXNG JSON output, engines, Redis, timeouts, and the OpenClaw search plugin. Includes both plugin configuration shapes.">
+  <meta property="og:url" content="https://searxng.danubelabs.net/configuration/">
+  <meta property="og:image" content="https://searxng.danubelabs.net/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="SearXNG + OpenClaw: private, self-hosted search with no API keys.">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Configuration: SearXNG, Redis, and OpenClaw">
+  <meta name="twitter:description" content="Configure SearXNG JSON output, engines, Redis, timeouts, and the OpenClaw search plugin. Includes both plugin configuration shapes.">
+  <meta name="twitter:image" content="https://searxng.danubelabs.net/og.png">
+  <meta name="twitter:image:alt" content="SearXNG + OpenClaw documentation">
+
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://searxng.danubelabs.net/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Configure",
+      "item": "https://searxng.danubelabs.net/configuration/"
+    }
+  ]
+}</script>
+</head>
+<body class="page-configuration">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="mesh-bg" aria-hidden="true">
+    <span class="mesh-node n1"></span>
+    <span class="mesh-node n2"></span>
+    <span class="mesh-node n3"></span>
+    <span class="mesh-node n4"></span>
+    <span class="mesh-node n5"></span>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="SearXNG + OpenClaw documentation home">
+        <svg class="brand-mark" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="14" cy="14" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M20.5 20.5 27 27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="14" cy="14" r="2.4" fill="currentColor"/>
+          <path d="M14 5.5v3M14 19.5v3M5.5 14h3M19.5 14h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-text">searxng<span class="brand-sep">/</span>openclaw</span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="sr-only">Toggle navigation</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/install/">Install</a>
+        <a href="/configuration/" aria-current="page">Configure</a>
+        <a href="/usage/">Usage</a>
+        <a href="/maintenance/">Maintain</a>
+        <a href="/security/">Security</a>
+        <a href="/troubleshooting/">Troubleshooting</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/about/">About</a>
+        <a class="nav-github" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.06-.49.06-.49.81.06 1.23.83 1.23.83.72 1.23 1.89.88 2.35.67.07-.52.28-.88.51-1.08-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow"><span class="eyebrow-dot"></span>Configuration</p>
+    <h1>Small surface area, explicit settings.</h1>
+    <p class="lede">
+      SearXNG needs four things for this setup: JSON output, a loopback bind, Redis,
+      and a generated secret key. Everything else is tuning. OpenClaw needs one
+      matching plugin/provider block.
+    </p>
+    <ul class="meta-strip" aria-label="Configuration facts">
+      <li><span>Main file</span><code>/etc/searxng/settings.yml</code></li>
+      <li><span>Agent file</span><code>~/.openclaw/openclaw.json</code></li>
+      <li><span>Restart</span><code>systemctl restart searxng</code></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">File</th><th scope="col">Purpose</th><th scope="col">Location</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>settings.yml</code></td><td>SearXNG configuration</td><td><code>/etc/searxng/settings.yml</code></td></tr>
+          <tr><td><code>openclaw.json</code></td><td>OpenClaw plugin/provider configuration</td><td><code>~/.openclaw/openclaw.json</code></td></tr>
+          <tr><td><code>searxng.service</code></td><td>systemd unit</td><td><code>/etc/systemd/system/searxng.service</code></td></tr>
+          <tr><td><code>settings.yml.template</code></td><td>Annotated reference</td><td><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/configs/settings.yml.template">configs/</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>SearXNG</p>
+      <h2>The settings OpenClaw actually depends on.</h2>
+    </div>
+
+    <div class="callout callout-warn">
+      <strong>Start with <code>use_default_settings</code>.</strong>
+      <p>A partial settings file must inherit SearXNG's defaults. Without this key, SearXNG treats the user file as the complete configuration instead of merging it. <code>keep_only</code> limits the merged engine catalogue to the 7 engines this setup enables.</p>
+      <div class="codeblock">
+<pre><code>use_default_settings:
+  engines:
+    keep_only:
+      - google
+      - duckduckgo
+      - brave
+      - bing
+      - wikipedia
+      - github
+      - youtube</code></pre>
+      </div>
+    </div>
+
+    <div class="split split-wide">
+      <div>
+        <div class="codeblock">
+<pre><code>search:
+  formats:
+    - html
+    - json            # required by the plugin
+
+server:
+  limiter: false      # acceptable only while loopback-bound
+  bind_address: "127.0.0.1"
+  port: 8080
+
+redis:
+  url: "redis://localhost:6379/0"</code></pre>
+        </div>
+        <div class="callout callout-warn compact">
+          <strong>JSON is not optional.</strong>
+          <p>If the API returns HTML, check <code>search.formats</code> first. This is the most common integration failure.</p>
+        </div>
+      </div>
+      <div>
+        <h3>Why each one matters</h3>
+        <ul class="check-list">
+          <li><strong>formats: json</strong> — the agent reads structured results, not scraped HTML.</li>
+          <li><strong>bind 127.0.0.1</strong> — no remote client can query the instance.</li>
+          <li><strong>limiter: false</strong> — no local rate limit for a single loopback user. Enable it before exposing the service.</li>
+          <li><strong>Redis URL</strong> — the local cache and temporary result storage.</li>
+          <li><strong>secret_key</strong> — generated per install; never reuse a sample value.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Engines</p>
+      <h2>7 enabled. 70+ available.</h2>
+      <p class="section-lede">
+        More engines usually means slower queries and a higher chance that an upstream
+        engine rate-limits your server. Start with the defaults, then add only what you
+        need.
+      </p>
+    </div>
+
+    <div class="engine-grid">
+      <span class="engine-tag">google</span>
+      <span class="engine-tag">duckduckgo</span>
+      <span class="engine-tag">brave</span>
+      <span class="engine-tag">bing</span>
+      <span class="engine-tag">wikipedia</span>
+      <span class="engine-tag">github</span>
+      <span class="engine-tag">youtube</span>
+    </div>
+
+    <div class="codeblock">
+<pre><code>engines:
+  - name: google
+    engine: google
+    shortcut: g
+    disabled: false
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: d
+    disabled: false
+  - name: brave
+    engine: brave
+    shortcut: b
+    disabled: false
+  - name: bing
+    engine: bing
+    shortcut: i
+    disabled: false
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: w
+    disabled: false
+  - name: github
+    engine: github
+    shortcut: gh
+    disabled: false
+  - name: youtube
+    engine: youtube
+    shortcut: yt
+    disabled: false</code></pre>
+    </div>
+
+    <p>The annotated template adds news engines:</p>
+    <div class="codeblock">
+<pre><code>  - name: google news
+    engine: google_news
+    shortcut: gn
+    disabled: false
+  - name: duckduckgo news
+    engine: duckduckgo_news
+    shortcut: dn
+    disabled: false</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Timeouts</p>
+      <h2>Change one value at a time.</h2>
+      <p class="section-lede">There is no benchmark in this repository that justifies a specific pool size. Measure with your own queries and engine set.</p>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <p class="panel-kicker">Default</p>
+        <h3>Balanced starting point</h3>
+        <div class="codeblock">
+<pre><code>outgoing:
+  request_timeout: 10.0
+  max_request_timeout: 30.0
+  pool_connections: 100
+  pool_maxsize: 50
+  enable_http2: true</code></pre>
+        </div>
+      </div>
+      <div class="panel">
+        <p class="panel-kicker">Small host</p>
+        <h3>512 MB–1 GB RAM</h3>
+        <div class="codeblock">
+<pre><code>outgoing:
+  request_timeout: 10.0
+  max_request_timeout: 20.0
+  pool_connections: 50
+  pool_maxsize: 25</code></pre>
+        </div>
+      </div>
+    </div>
+    <p class="small"><code>max_request_timeout</code> belongs under <code>outgoing</code>, not <code>server</code>. A misplaced key is ignored or rejected depending on the SearXNG version.</p>
+  </div>
+</section>
+
+<section class="section section-tint" id="openclaw-configuration">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>OpenClaw</p>
+      <h2>Match the config to your release.</h2>
+      <p class="section-lede">
+        Two integration shapes exist. Use the one your installed OpenClaw version
+        documents, not both unless you have verified that they coexist.
+      </p>
+    </div>
+
+    <div class="config-compare">
+      <article class="panel" id="plugin-block">
+        <div class="panel-heading">
+          <span class="pill">Tested with 2026.2.23</span>
+          <h3><code>searxng-search</code> plugin</h3>
+        </div>
+        <p>This is what <code>configure-openclaw.sh</code> writes.</p>
+        <div class="codeblock">
+<pre><code>{
+  "plugins": {
+    "entries": {
+      "searxng-search": {
+        "enabled": true,
+        "config": {
+          "baseUrl": "http://localhost:8080",
+          "timeoutMs": 60000,
+          "defaultCount": 100,
+          "enableMultiPage": true
+        }
+      }
+    }
+  }
+}</code></pre>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Option</th><th scope="col">Default</th><th scope="col">Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>baseUrl</code></td><td><code>http://localhost:8080</code></td><td>SearXNG base URL</td></tr>
+              <tr><td><code>timeoutMs</code></td><td><code>60000</code></td><td>Request timeout in ms</td></tr>
+              <tr><td><code>defaultCount</code></td><td><code>100</code></td><td>Results requested per search</td></tr>
+              <tr><td><code>enableMultiPage</code></td><td><code>true</code></td><td>Allow multi-page retrieval</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small">These keys are plugin-specific. Unknown keys show up in <code>openclaw doctor</code>.</p>
+      </article>
+
+      <article class="panel" id="built-in-searxng-provider">
+        <div class="panel-heading">
+          <span class="pill pill-blue">2026.6.9+</span>
+          <h3>Built-in <code>searxng</code> provider</h3>
+        </div>
+        <p>OpenClaw documents this shape for its built-in self-hosted provider.</p>
+        <div class="codeblock">
+<pre><code>{
+  "tools": {
+    "web": {
+      "search": {
+        "provider": "searxng",
+        "maxResults": 10,
+        "timeoutSeconds": 60
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "searxng": {
+        "config": {
+          "webSearch": {
+            "baseUrl": "http://127.0.0.1:8080",
+            "language": "en"
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+        </div>
+        <ul class="check-list">
+          <li>Install with <code>openclaw plugins install @openclaw/searxng-plugin</code> if it is not bundled.</li>
+          <li><code>baseUrl</code> lives under <code>plugins.entries.searxng.config.webSearch</code>.</li>
+          <li>A per-call <code>count</code> accepts 1–10 results.</li>
+          <li><code>http://</code> URLs must target loopback or a private host.</li>
+          <li>JSON must be enabled in SearXNG.</li>
+        </ul>
+        <p class="small"><a href="https://docs.openclaw.ai/tools/searxng-search" rel="noopener">OpenClaw SearXNG documentation</a></p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Agent context</p>
+      <h2>Keep large result sets out of the context window.</h2>
+    </div>
+    <div class="split">
+      <div>
+        <p>If searches crowd the model's context, lower the result count first, then keep compaction enabled. These are OpenClaw agent settings, not SearXNG settings; confirm key names against your release.</p>
+        <div class="codeblock">
+<pre><code>{
+  "agents": {
+    "defaults": {
+      "compaction": {
+        "reserveTokensFloor": 80000,
+        "memoryFlush": {
+          "enabled": true,
+          "softThresholdTokens": 15000
+        }
+      },
+      "contextPruning": {
+        "mode": "cache-ttl",
+        "ttl": "6h",
+        "keepLastAssistants": 5
+      }
+    }
+  }
+}</code></pre>
+        </div>
+      </div>
+      <div class="panel">
+        <p class="panel-kicker">Result volume</p>
+        <h3>Reduce before compacting.</h3>
+        <p>For the <code>searxng-search</code> plugin, set <code>defaultCount</code> to a smaller value. For the built-in provider, set <code>tools.web.search.maxResults</code> and keep per-call <code>count</code> small.</p>
+        <p>Multi-page retrieval is a SearXNG API feature. The plugin may expose it; the built-in provider does not expose a multi-page option.</p>
+        <a class="text-link" href="/troubleshooting/#issue-7-context-overflow-in-openclaw">Context overflow fix <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Redis and firewall</p>
+      <h2>Keep both services on loopback.</h2>
+    </div>
+    <div class="split">
+      <div>
+        <h3>Redis password (optional)</h3>
+        <div class="codeblock">
+<pre><code>sudo nano /etc/redis/redis.conf</code></pre>
+        </div>
+        <div class="codeblock">
+<pre><code>bind 127.0.0.1
+requirepass &lt;generate-a-strong-password&gt;</code></pre>
+        </div>
+        <div class="codeblock">
+<pre><code>redis:
+  url: "redis://:&lt;generate-a-strong-password&gt;@localhost:6379/0"</code></pre>
+        </div>
+        <div class="codeblock">
+<pre><code>sudo systemctl restart redis-server
+sudo systemctl restart searxng</code></pre>
+        </div>
+      </div>
+      <div>
+        <h3>Firewall</h3>
+        <p>No inbound rule is required for a loopback-only install. If you deliberately expose SearXNG on a LAN, restrict it to one subnet and understand that there is no authentication:</p>
+        <div class="codeblock">
+<pre><code>sudo ufw allow from 192.168.1.0/24 to any port 8080 proto tcp</code></pre>
+        </div>
+        <p>Do not expose port 6379 or port 8080 directly to the internet.</p>
+        <div class="callout callout-danger compact">
+          <strong>No TLS or auth is included.</strong>
+          <p>If you change the bind address, add a reverse proxy with TLS and authentication, and enable the SearXNG limiter.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Verification</p>
+      <h2>Check the configuration before debugging the agent.</h2>
+    </div>
+    <div class="codeblock">
+<pre><code># YAML syntax
+python3 -c "import yaml; yaml.safe_load(open('/etc/searxng/settings.yml'))"
+
+# Redis
+redis-cli ping
+
+# SearXNG
+sudo systemctl restart searxng
+sudo systemctl is-active searxng
+
+# JSON API, page 2, categories
+curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '.results | length'
+curl -s "http://127.0.0.1:8080/search?q=python&amp;format=json&amp;pageno=2" | jq '.results | length'
+curl -s "http://127.0.0.1:8080/search?q=code&amp;categories=it&amp;format=json" | jq '.results | length'
+
+# OpenClaw
+openclaw doctor 2&gt;&amp;1 | grep -i searxng</code></pre>
+    </div>
+
+    <div class="checklist">
+      <h3>Configuration checklist</h3>
+      <ul>
+        <li><code>search.formats</code> includes <code>json</code></li>
+        <li><code>server.secret_key</code> is a random value</li>
+        <li><code>server.bind_address</code> is <code>127.0.0.1</code></li>
+        <li><code>server.limiter</code> is off only while loopback-bound</li>
+        <li><code>redis.url</code> points at the local instance</li>
+        <li>Only needed engines are enabled</li>
+        <li><code>max_request_timeout</code> is under <code>outgoing</code></li>
+        <li>OpenClaw uses one matching plugin/provider shape</li>
+        <li><code>openclaw doctor</code> reports no invalid keys</li>
+        <li>The JSON API, page 2, and a category query return results</li>
+      </ul>
+    </div>
+  </div>
+</section>
+    <nav class="container page-nav" aria-label="Previous and next pages">
+      <a class="page-nav-link prev" href="/install/">
+        <span class="page-nav-label">Previous</span>
+        <span class="page-nav-title">Install</span>
+      </a>
+      <a class="page-nav-link next" href="/usage/">
+        <span class="page-nav-label">Next</span>
+        <span class="page-nav-title">Usage</span>
+      </a>
+    </nav>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="/" aria-label="Documentation home">
+          <svg class="brand-mark" width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="14" cy="14" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M20.5 20.5 27 27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="14" cy="14" r="2.4" fill="currentColor"/>
+          </svg>
+          <span class="brand-text">searxng<span class="brand-sep">/</span>openclaw</span>
+        </a>
+        <p>Local, privacy-respecting search for your OpenClaw agent. No search API keys, no per-query bill.</p>
+        <p class="footer-mono">searxng.danubelabs.net</p>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Guide</h2>
+        <ul class="footer-links">
+          <li><a href="/install/">Install</a></li>
+          <li><a href="/configuration/">Configuration</a></li>
+          <li><a href="/usage/">Usage</a></li>
+          <li><a href="/maintenance/">Maintenance</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Reference</h2>
+        <ul class="footer-links">
+          <li><a href="/security/">Security</a></li>
+          <li><a href="/troubleshooting/">Troubleshooting</a></li>
+          <li><a href="/faq/">FAQ</a></li>
+          <li><a href="/about/">About &amp; license</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Project</h2>
+        <ul class="footer-links">
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup" rel="noopener">GitHub repository</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/issues" rel="noopener">Issues</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/CHANGELOG.md" rel="noopener">Changelog</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/LICENSE" rel="noopener">MIT license</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 FiredMosquito831. MIT licensed.</p>
+      <p>Version 1.1.0 · Updated 2026-10-22 · Not affiliated with SearXNG or OpenClaw.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>

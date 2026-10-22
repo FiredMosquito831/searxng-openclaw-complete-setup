@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow"><span class="eyebrow-dot"></span>FAQ</p>
+    <h1>Straight answers, including the limits.</h1>
+    <p class="lede">
+      {{ faq | length }} questions about cost, engines, privacy, OpenClaw
+      compatibility, result counts, maintenance, and what this repository deliberately
+      does not do.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container faq-layout">
+    <aside class="faq-index" aria-label="FAQ sections">
+      <p class="faq-index-title">Sections</p>
+      <a href="#faq-general">General</a>
+      <a href="#faq-cost">Cost</a>
+      <a href="#faq-installation">Installation</a>
+      <a href="#faq-privacy-security">Privacy &amp; security</a>
+      <a href="#faq-usage">Usage</a>
+      <a href="#faq-maintenance">Maintenance</a>
+      <a href="#faq-comparison">Comparison</a>
+      <a href="#faq-contributing">Contributing</a>
+    </aside>
+
+    <div class="faq-main">
+      {% set groups = [
+        ('General', 'faq-general'),
+        ('Cost', 'faq-cost'),
+        ('Installation', 'faq-installation'),
+        ('Privacy & security', 'faq-privacy-security'),
+        ('Usage', 'faq-usage'),
+        ('Maintenance', 'faq-maintenance'),
+        ('Comparison', 'faq-comparison'),
+        ('Contributing', 'faq-contributing')
+      ] %}
+      {% for group_name, group_id in groups %}
+      {% set items = faq | selectattr('group', 'equalto', group_name) | list %}
+      <section class="faq-group" id="{{ group_id }}">
+        <h2>{{ group_name }}</h2>
+        <div class="faq-list">
+          {% for item in items %}
+          <details class="faq-item">
+            <summary><span class="faq-q">{{ item.q }}</span><span class="faq-toggle" aria-hidden="true"></span></summary>
+            <div class="faq-a">{{ item.a | safe }}</div>
+          </details>
+          {% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+
+      <div class="callout callout-info">
+        <strong>Still stuck?</strong>
+        <p>Use the <a href="/troubleshooting/">troubleshooting guide</a> for concrete failures, or open an issue with the diagnostics block and your OpenClaw version.</p>
+        <div class="button-row">
+          <a class="btn btn-primary" href="{{ repo_url }}/issues" rel="noopener">Open an issue</a>
+          <a class="btn btn-ghost" href="/install/">Read the install guide</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

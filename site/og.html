@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SearXNG + OpenClaw social card</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background: #070b0f;
+    color: #e8f0f5;
+    font-family: "Segoe UI", Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .card {
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    padding: 56px 64px 44px;
+    background:
+      radial-gradient(800px 460px at 8% -10%, rgba(78, 225, 193, 0.16), transparent 62%),
+      radial-gradient(700px 460px at 96% 4%, rgba(108, 182, 255, 0.1), transparent 60%),
+      #070b0f;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .grid {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(to bottom, #000, transparent 84%);
+    -webkit-mask-image: linear-gradient(to bottom, #000, transparent 84%);
+  }
+  .mesh {
+    position: absolute;
+    right: -40px;
+    top: -30px;
+    width: 620px;
+    height: 690px;
+    opacity: 0.6;
+  }
+  header, main, footer { position: relative; z-index: 2; }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    font-family: Consolas, "IBM Plex Mono", monospace;
+    font-size: 27px;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+  }
+  .brand svg { color: #4ee1c1; }
+  .brand .sep { color: #6f8496; margin: 0 3px; }
+  .badge {
+    border: 1px solid rgba(78, 225, 193, 0.34);
+    background: rgba(78, 225, 193, 0.1);
+    color: #9df4e1;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-family: Consolas, monospace;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  main {
+    margin-top: auto;
+    margin-bottom: auto;
+    padding-top: 10px;
+    max-width: 790px;
+  }
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    color: #4ee1c1;
+    font-family: Consolas, monospace;
+    font-size: 16px;
+    letter-spacing: 0.19em;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #4ee1c1;
+    box-shadow: 0 0 0 6px rgba(78, 225, 193, 0.12);
+  }
+  h1 {
+    font-size: 86px;
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+    font-weight: 700;
+    margin-bottom: 24px;
+    max-width: 780px;
+    background: linear-gradient(114deg, #f5fafc 22%, #b9f6e8 60%, #8ed4ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  h1 .x {
+    color: #4ee1c1;
+    font-family: Consolas, monospace;
+    font-weight: 400;
+    -webkit-text-fill-color: #4ee1c1;
+    padding: 0 4px;
+  }
+  .sub {
+    color: #a6bccb;
+    font-size: 25px;
+    line-height: 1.5;
+    max-width: 690px;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+  }
+  .chip {
+    border: 1px solid #243746;
+    background: rgba(255, 255, 255, 0.025);
+    border-radius: 7px;
+    padding: 7px 13px;
+    color: #8fa6b7;
+    font-family: Consolas, monospace;
+    font-size: 15px;
+  }
+  .chip.accent { color: #7af0d7; border-color: rgba(78, 225, 193, 0.32); }
+  footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #1c2a36;
+    padding-top: 18px;
+    font-family: Consolas, monospace;
+    font-size: 16px;
+  }
+  .url { color: #4ee1c1; }
+  .path { color: #6f8496; letter-spacing: 0.04em; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="grid"></div>
+  <svg class="mesh" viewBox="0 0 620 690" aria-hidden="true">
+    <g fill="none" stroke="#4ee1c1" stroke-opacity=".22" stroke-width="1">
+      <path d="M80 560 210 330 390 430 540 190"/>
+      <path d="M80 560 330 600 390 430"/>
+      <path d="M210 330 330 600"/>
+      <path d="M210 330 390 90 540 190"/>
+      <path d="M390 90 390 430"/>
+      <path d="M540 190 390 430"/>
+      <path d="M80 560 120 360 390 90"/>
+    </g>
+    <g fill="#4ee1c1">
+      <circle cx="80" cy="560" r="4" fill-opacity=".8"/>
+      <circle cx="210" cy="330" r="5"/>
+      <circle cx="390" cy="430" r="4" fill-opacity=".8"/>
+      <circle cx="540" cy="190" r="3"/>
+      <circle cx="330" cy="600" r="3"/>
+      <circle cx="390" cy="90" r="3"/>
+      <circle cx="120" cy="360" r="2.5"/>
+    </g>
+    <g fill="#6cb6ff" fill-opacity=".7">
+      <circle cx="470" cy="560" r="2.5"/>
+      <circle cx="560" cy="420" r="2"/>
+      <circle cx="250" cy="470" r="2"/>
+    </g>
+  </svg>
+
+  <header>
+    <div class="brand">
+      <svg width="42" height="42" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="14" cy="14" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M20.5 20.5 27 27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="14" cy="14" r="2.4" fill="currentColor"/>
+      </svg>
+      <span>searxng<span class="sep">/</span>openclaw</span>
+    </div>
+    <div class="badge">MIT · self-hosted</div>
+  </header>
+
+  <main>
+    <div class="eyebrow"><span class="dot"></span>Private search for your agent</div>
+    <h1>SearXNG <span class="x">×</span> OpenClaw</h1>
+    <p class="sub">Local JSON search, Redis cache, and multi-page results. No search API keys. No per-query bill.</p>
+    <div class="chips">
+      <span class="chip accent">127.0.0.1:8080</span>
+      <span class="chip">70+ engines</span>
+      <span class="chip">systemd</span>
+      <span class="chip">Ubuntu / Debian</span>
+    </div>
+  </main>
+
+  <footer>
+    <span class="url">{{ site_url | replace('https://', '') }}</span>
+    <span class="path">install / configure / secure</span>
+  </footer>
+</div>
+</body>
+</html>
