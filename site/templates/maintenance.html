@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow"><span class="eyebrow-dot"></span>Maintenance</p>
+    <h1>Update, back up, inspect, remove.</h1>
+    <p class="lede">
+      The deployment is small enough to maintain by hand. The scripts still wrap the
+      parts that are easy to get wrong: pulling the right branch, keeping backups out
+      of <code>/root</code>, and restarting in the right order.
+    </p>
+    <ul class="meta-strip" aria-label="Maintenance facts">
+      <li><span>Update cadence</span>Monthly</li>
+      <li><span>Backups</span><code>~/searxng-backups</code></li>
+      <li><span>Service</span><code>searxng.service</code></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container">
+    <div class="three-up">
+      <div class="mini-card">
+        <span class="mini-card-index">01</span>
+        <h3>Update monthly</h3>
+        <p>SearXNG fixes engine scrapers and ships dependency patches. Update sooner if one engine stops returning results.</p>
+      </div>
+      <div class="mini-card">
+        <span class="mini-card-index">02</span>
+        <h3>Back up first</h3>
+        <p>The update script creates a backup automatically. Take one before manual edits to <code>settings.yml</code> or <code>openclaw.json</code>.</p>
+      </div>
+      <div class="mini-card">
+        <span class="mini-card-index">03</span>
+        <h3>Test after changes</h3>
+        <p>Run the test suite after updates, port changes, firewall changes, or plugin changes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Update</p>
+      <h2>Pull the branch that is actually checked out.</h2>
+    </div>
+    <div class="split">
+      <div>
+        <div class="codeblock">
+<pre><code>sudo bash scripts/update-searxng.sh</code></pre>
+        </div>
+        <p>The script:</p>
+        <ol class="ordered-list">
+          <li>Creates a configuration backup.</li>
+          <li>Fetches and fast-forwards the current SearXNG branch (upstream uses <code>master</code>).</li>
+          <li>Reinstalls the editable Python package.</li>
+          <li>Restarts <code>searxng.service</code>.</li>
+          <li>Checks the service and JSON API.</li>
+        </ol>
+        <p class="small">The script does not roll back automatically. If the service fails after an update, restore the backup from the path printed by the script.</p>
+      </div>
+      <div>
+        <p>Equivalent manual update:</p>
+        <div class="codeblock">
+<pre><code>sudo -u searxng -i
+cd /usr/local/searxng/searxng-src
+git branch --show-current
+git pull --ff-only
+source /usr/local/searxng/searx-pyenv/bin/activate
+pip install --use-pep517 --no-build-isolation -e .
+exit
+
+sudo systemctl restart searxng
+sudo systemctl status searxng --no-pager</code></pre>
+        </div>
+        <div class="callout callout-warn compact">
+          <strong>Watch for settings drift.</strong>
+          <p>SearXNG settings keys can change between versions. If a key is rejected after an update, compare your file with the version's template in <code>utils/templates/etc/searxng/</code>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Backup and restore</p>
+      <h2>One archive, including a restore helper.</h2>
+    </div>
+    <div class="split">
+      <div>
+        <div class="codeblock">
+<pre><code>bash scripts/backup-searxng.sh</code></pre>
+        </div>
+        <p>Output:</p>
+        <div class="codeblock">
+<pre><code>~/searxng-backups/searxng-backup-YYYYMMDD-HHMMSS.tar.gz</code></pre>
+        </div>
+        <p>The archive contains:</p>
+        <ul class="check-list">
+          <li><code>/etc/searxng/settings.yml</code></li>
+          <li><code>/etc/searxng/limiter.toml</code> if present</li>
+          <li><code>/etc/systemd/system/searxng.service</code></li>
+          <li><code>~/.openclaw/openclaw.json</code> if present</li>
+          <li><code>restore.sh</code></li>
+        </ul>
+        <p class="small">When the script is run through <code>sudo</code>, it resolves the invoking user's home through <code>SUDO_USER</code>, so archives do not land in <code>/root</code>.</p>
+      </div>
+      <div>
+        <p>Restore:</p>
+        <div class="codeblock">
+<pre><code>cd ~/searxng-backups
+tar -xzf searxng-backup-YYYYMMDD-HHMMSS.tar.gz
+cd YYYYMMDD-HHMMSS
+bash restore.sh</code></pre>
+        </div>
+        <p>Run <code>restore.sh</code> as your user, not with <code>sudo</code>. It calls <code>sudo</code> for system files and restarts both services.</p>
+        <div class="callout callout-danger compact">
+          <strong>Backups contain secrets.</strong>
+          <p>They can include the OpenClaw config and Redis credentials. Restrict permissions and never attach an unredacted archive to an issue.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Status and logs</p>
+      <h2>Useful commands, in the order you will need them.</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Task</th><th scope="col">Command</th></tr></thead>
+        <tbody>
+          <tr><td>SearXNG state</td><td><code>sudo systemctl status searxng --no-pager</code></td></tr>
+          <tr><td>Redis</td><td><code>redis-cli ping</code></td></tr>
+          <tr><td>SearXNG logs</td><td><code>sudo journalctl -u searxng -f</code></td></tr>
+          <tr><td>SearXNG logs, last 100</td><td><code>sudo journalctl -u searxng -n 100 --no-pager</code></td></tr>
+          <tr><td>OpenClaw gateway</td><td><code>systemctl --user status openclaw-gateway.service --no-pager</code></td></tr>
+          <tr><td>OpenClaw logs</td><td><code>journalctl --user -u openclaw-gateway.service -f</code></td></tr>
+          <tr><td>OpenClaw config check</td><td><code>openclaw doctor</code></td></tr>
+          <tr><td>API check</td><td><code>curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '.results | length'</code></td></tr>
+          <tr><td>Failed engines</td><td><code>curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '.unresponsive_engines'</code></td></tr>
+          <tr><td>Full suite</td><td><code>bash scripts/test-setup.sh</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Restart</p>
+      <h2>Restart in the right order.</h2>
+    </div>
+    <div class="split">
+      <div>
+        <div class="codeblock">
+<pre><code># SearXNG after a settings change
+sudo systemctl restart searxng
+
+# Redis after a config change
+sudo systemctl restart redis-server
+
+# If both changed, Redis first
+sudo systemctl restart redis-server
+sudo systemctl restart searxng</code></pre>
+        </div>
+      </div>
+      <div>
+        <div class="codeblock">
+<pre><code># OpenClaw after a plugin/config change
+systemctl --user restart openclaw-gateway.service
+sleep 5
+openclaw doctor 2&gt;&amp;1 | grep -i searxng</code></pre>
+        </div>
+        <p>Restart the OpenClaw gateway as its owner. Running <code>systemctl --user</code> under <code>sudo</code> targets root's user manager, not yours.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Suggested schedule</p>
+      <h2>Low-effort maintenance that prevents surprises.</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">When</th><th scope="col">Action</th></tr></thead>
+        <tbody>
+          <tr><td>After every config change</td><td>Restart, run the API check, run <code>test-setup.sh</code></td></tr>
+          <tr><td>Monthly</td><td><code>sudo bash scripts/update-searxng.sh</code></td></tr>
+          <tr><td>Before updates or edits</td><td><code>bash scripts/backup-searxng.sh</code></td></tr>
+          <tr><td>Quarterly</td><td>Review enabled engines, logs, disk use, and backup restore once</td></tr>
+          <tr><td>When an engine breaks</td><td>Update SearXNG, then disable the engine if it still fails</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">There is no bundled timer for updates or backups. Add a systemd timer or cron job if you want automation; the scripts are safe to call from a scheduler. Test the first run manually.</p>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Uninstall</p>
+      <h2>Remove the service, the user, and the files.</h2>
+    </div>
+    <div class="split">
+      <div>
+        <div class="codeblock">
+<pre><code>sudo bash scripts/uninstall.sh</code></pre>
+        </div>
+        <p>The script asks for confirmation, stops and disables the service, removes the unit, deletes the <code>searxng</code> user and directories, and optionally removes Redis and the OpenClaw plugin block.</p>
+      </div>
+      <div class="callout callout-warn">
+        <strong>It removes data.</strong>
+        <p>Back up first if you want to keep the configuration. The script leaves the repository checkout in place; delete it manually if you no longer need it.</p>
+        <div class="codeblock">
+<pre><code>bash scripts/backup-searxng.sh
+sudo bash scripts/uninstall.sh</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow"><span class="eyebrow-dot"></span>Usage</p>
+    <h1>Ask the agent, or query the API directly.</h1>
+    <p class="lede">
+      OpenClaw uses natural language; SearXNG exposes a conventional JSON endpoint.
+      Both hit the same local service, so you can debug the backend without involving
+      the model.
+    </p>
+    <ul class="meta-strip" aria-label="Usage entry points">
+      <li><span>Agent</span>OpenClaw</li>
+      <li><span>Chat</span>Telegram if connected</li>
+      <li><span>API</span><code>127.0.0.1:8080</code></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container">
+    <div class="three-up">
+      <div class="mini-card">
+        <span class="mini-card-index">01</span>
+        <h3>Web UI</h3>
+        <p>Open <code>http://127.0.0.1:8080</code> on the host. Useful for checking engines and seeing the raw result page.</p>
+      </div>
+      <div class="mini-card">
+        <span class="mini-card-index">02</span>
+        <h3>OpenClaw</h3>
+        <p>Ask the agent to search. The plugin/provider decides when to call SearXNG and how many results to pass to the model.</p>
+      </div>
+      <div class="mini-card">
+        <span class="mini-card-index">03</span>
+        <h3>HTTP JSON</h3>
+        <p>Call <code>/search?q=...&amp;format=json</code> from curl, a script, or another tool. No API key.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Through OpenClaw</p>
+      <h2>Natural language, not a command grammar.</h2>
+      <p class="section-lede">
+        These are example requests, not a special syntax. OpenClaw decides whether to
+        call the search tool and may rewrite the query. If the agent ignores the tool,
+        check <code>openclaw doctor</code> and the tool policy for your setup.
+      </p>
+    </div>
+
+    <div class="prompt-grid">
+      <div class="prompt-card">
+        <span class="prompt-label">Basic</span>
+        <p>Search for Rust async programming using SearXNG</p>
+      </div>
+      <div class="prompt-card">
+        <span class="prompt-label">Recency</span>
+        <p>Search for EU AI Act news with time_range: month</p>
+      </div>
+      <div class="prompt-card">
+        <span class="prompt-label">Categories</span>
+        <p>Search for Python packaging with categories: it,science</p>
+      </div>
+      <div class="prompt-card">
+        <span class="prompt-label">Volume</span>
+        <p>Search for database indexing articles with 100 results</p>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>Telegram is a channel, not a separate integration.</strong>
+      <p>If your OpenClaw gateway is already connected to Telegram, send the same natural-language request to the bot. This repository does not configure Telegram, bot tokens, or channel access.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Direct API</p>
+      <h2>Reproduce exactly what the agent sees.</h2>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">Parameter</th><th scope="col">Example</th><th scope="col">Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>q</code></td><td><code>rust async</code></td><td>Required query string</td></tr>
+          <tr><td><code>format</code></td><td><code>json</code></td><td>Must be enabled in <code>search.formats</code></td></tr>
+          <tr><td><code>pageno</code></td><td><code>2</code></td><td>Further result pages; engine support varies</td></tr>
+          <tr><td><code>categories</code></td><td><code>it,science</code></td><td>Comma-separated SearXNG categories</td></tr>
+          <tr><td><code>language</code></td><td><code>en</code></td><td>Result language where supported</td></tr>
+          <tr><td><code>time_range</code></td><td><code>month</code></td><td>Recency filter where the engine supports it</td></tr>
+          <tr><td><code>engines</code></td><td><code>google</code></td><td>Restrict to specific enabled engines</td></tr>
+          <tr><td><code>safesearch</code></td><td><code>0</code></td><td>0 off, 1 moderate, 2 strict (engine-dependent)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="codeblock">
+<pre><code># Basic JSON search
+curl -s "http://127.0.0.1:8080/search?q=python&amp;format=json" | jq '.results[] | {title, url}'
+
+# Second page
+curl -s "http://127.0.0.1:8080/search?q=python&amp;format=json&amp;pageno=2" | jq '.results | length'
+
+# IT and science categories
+curl -s "http://127.0.0.1:8080/search?q=rust&amp;categories=it,science&amp;format=json" | jq '.results | length'
+
+# Recent results
+curl -s "http://127.0.0.1:8080/search?q=climate&amp;time_range=month&amp;format=json" | jq '.results | length'
+
+# One engine only
+curl -s "http://127.0.0.1:8080/search?q=linux&amp;engines=wikipedia&amp;format=json" | jq '.results[] | .title'
+
+# Which engines failed
+curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '.unresponsive_engines'</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="split">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-dot"></span>Response shape</p>
+        <h2>What comes back.</h2>
+        <p>SearXNG returns a JSON object with metadata, a result array, and the list of engines that did not answer. This is a trimmed illustrative shape, not a captured response:</p>
+        <div class="codeblock">
+<pre><code>{
+  "query": "rust async",
+  "number_of_results": 0,
+  "results": [
+    {
+      "url": "https://example.com/article",
+      "title": "Result title",
+      "content": "Snippet returned by the engine.",
+      "engine": "google",
+      "category": "general"
+    }
+  ],
+  "answers": [],
+  "unresponsive_engines": []
+}</code></pre>
+        </div>
+        <p class="small"><code>number_of_results</code> is not a reliable total; some engines do not report one. Count the <code>results</code> array for what you actually received.</p>
+      </div>
+
+      <div class="panel">
+        <p class="panel-kicker">Field guide</p>
+        <h3>Fields worth using</h3>
+        <div class="table-wrap">
+          <table>
+            <tbody>
+              <tr><td><code>results[].url</code></td><td>Result target</td></tr>
+              <tr><td><code>results[].title</code></td><td>Display title</td></tr>
+              <tr><td><code>results[].content</code></td><td>Snippet text</td></tr>
+              <tr><td><code>results[].engine</code></td><td>Originating engine</td></tr>
+              <tr><td><code>results[].category</code></td><td>SearXNG category</td></tr>
+              <tr><td><code>unresponsive_engines</code></td><td>Engines that failed or timed out</td></tr>
+              <tr><td><code>answers</code></td><td>Instant answers, when available</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Multi-page results</p>
+      <h2>Pagination is real, but engine-dependent.</h2>
+    </div>
+    <div class="split">
+      <div>
+        <p>SearXNG accepts <code>pageno=2</code>, <code>pageno=3</code>, and so on. Not every upstream engine returns a full second page for every query, so expect the count to fall as page numbers rise.</p>
+        <div class="codeblock">
+<pre><code>for page in 1 2 3; do
+  printf "page %s: " "$page"
+  curl -s "http://127.0.0.1:8080/search?q=python&amp;format=json&amp;pageno=$page" \
+    | jq '.results | length'
+done</code></pre>
+        </div>
+        <p class="small">SearXNG pages are independent requests. Deduplicate results client-side if you combine pages.</p>
+      </div>
+      <div class="panel">
+        <p class="panel-kicker">Plugin limits</p>
+        <h3>Know which layer caps you.</h3>
+        <ul class="check-list">
+          <li>The <code>searxng-search</code> template requests <code>defaultCount: 100</code> and sets <code>enableMultiPage: true</code>. Your installed plugin must support those keys.</li>
+          <li>OpenClaw's built-in provider caps a single call's <code>count</code> at 10 results and has no multi-page option.</li>
+          <li>SearXNG itself returns whatever each engine gives it for a page. There is no guarantee of 100 or 300 results.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Health checks</p>
+      <h2>When a search looks wrong, isolate the layer.</h2>
+    </div>
+    <div class="codeblock">
+<pre><code># Is the service up?
+sudo systemctl is-active searxng
+redis-cli ping
+
+# Does the API answer without the agent?
+curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '{results: (.results | length), unresponsive: .unresponsive_engines}'
+
+# Does the agent see the plugin?
+openclaw doctor 2&gt;&amp;1 | grep -i searxng
+
+# Full suite
+bash scripts/test-setup.sh</code></pre>
+    </div>
+    <div class="link-cards">
+      <a class="link-card" href="/troubleshooting/">
+        <span class="link-card-kicker">Failure</span>
+        <strong>Troubleshooting</strong>
+        <span>Zero results, HTML instead of JSON, Redis errors, plugin not loading.</span>
+      </a>
+      <a class="link-card" href="/security/">
+        <span class="link-card-kicker">Trust boundary</span>
+        <strong>Untrusted results</strong>
+        <span>How OpenClaw wraps search content before the model sees it.</span>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

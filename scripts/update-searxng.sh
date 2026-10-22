@@ -32,33 +32,23 @@ fi
 
 log_info "Checking for updates..."
 
+# Resolve the script location so backups work from any directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Backup before update
 log_info "Creating backup before update..."
-bash scripts/backup-searxng.sh || log_warn "Backup failed, continuing anyway"
+bash "$SCRIPT_DIR/backup-searxng.sh" || log_warn "Backup failed, continuing anyway"
 
 # Update SearXNG
+# SearXNG's default branch is master; use the checked-out branch instead of
+# assuming a branch name so this keeps working if upstream renames it.
 log_info "Updating SearXNG..."
 sudo -u searxng -i << 'EOF'
 cd /usr/local/searxng/searxng-src
-git fetch origin
-CURRENT_COMMIT=$(git rev-parse HEAD)
-git checkout main
-git pull origin main
-NEW_COMMIT=$(git rev-parse HEAD)
-
-if [ "$CURRENT_COMMIT" = "$NEW_COMMIT" ]; then
-    echo "NO_UPDATE_NEEDED"
-else
-    echo "UPDATED"
-fi
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+git fetch origin "$BRANCH"
+git pull --ff-only origin "$BRANCH"
 EOF
-
-# Check if update was needed
-UPDATE_STATUS=$(sudo -u searxng -i << 'EOF'
-cd /usr/local/searxng/searxng-src
-git rev-parse HEAD
-EOF
-)
 
 # Reinstall dependencies
 log_info "Reinstalling dependencies..."

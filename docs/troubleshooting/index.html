@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Troubleshooting SearXNG and OpenClaw integration</title>
+  <meta name="description" content="Fix SearXNG service failures, HTML instead of JSON, zero results, Redis connection errors, port conflicts, and OpenClaw plugin problems.">
+  <meta name="keywords" content="SearXNG troubleshooting, Redis connection refused, JSON API HTML, OpenClaw plugin not loading, port 8080, systemd">
+  <meta name="author" content="FiredMosquito831">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://searxng.danubelabs.net/troubleshooting/">
+
+  <meta name="theme-color" content="#070b0f">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="SearXNG + OpenClaw">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="Troubleshooting SearXNG and OpenClaw integration">
+  <meta property="og:description" content="Fix SearXNG service failures, HTML instead of JSON, zero results, Redis connection errors, port conflicts, and OpenClaw plugin problems.">
+  <meta property="og:url" content="https://searxng.danubelabs.net/troubleshooting/">
+  <meta property="og:image" content="https://searxng.danubelabs.net/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="SearXNG + OpenClaw: private, self-hosted search with no API keys.">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Troubleshooting SearXNG and OpenClaw integration">
+  <meta name="twitter:description" content="Fix SearXNG service failures, HTML instead of JSON, zero results, Redis connection errors, port conflicts, and OpenClaw plugin problems.">
+  <meta name="twitter:image" content="https://searxng.danubelabs.net/og.png">
+  <meta name="twitter:image:alt" content="SearXNG + OpenClaw documentation">
+
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://searxng.danubelabs.net/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Troubleshooting",
+      "item": "https://searxng.danubelabs.net/troubleshooting/"
+    }
+  ]
+}</script>
+</head>
+<body class="page-troubleshooting">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="mesh-bg" aria-hidden="true">
+    <span class="mesh-node n1"></span>
+    <span class="mesh-node n2"></span>
+    <span class="mesh-node n3"></span>
+    <span class="mesh-node n4"></span>
+    <span class="mesh-node n5"></span>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="SearXNG + OpenClaw documentation home">
+        <svg class="brand-mark" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="14" cy="14" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M20.5 20.5 27 27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="14" cy="14" r="2.4" fill="currentColor"/>
+          <path d="M14 5.5v3M14 19.5v3M5.5 14h3M19.5 14h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-text">searxng<span class="brand-sep">/</span>openclaw</span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="sr-only">Toggle navigation</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/install/">Install</a>
+        <a href="/configuration/">Configure</a>
+        <a href="/usage/">Usage</a>
+        <a href="/maintenance/">Maintain</a>
+        <a href="/security/">Security</a>
+        <a href="/troubleshooting/" aria-current="page">Troubleshooting</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/about/">About</a>
+        <a class="nav-github" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.06-.49.06-.49.81.06 1.23.83 1.23.83.72 1.23 1.89.88 2.35.67.07-.52.28-.88.51-1.08-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow"><span class="eyebrow-dot"></span>Troubleshooting</p>
+    <h1>Isolate the layer, then fix it.</h1>
+    <p class="lede">
+      Most failures are one of four things: the service is down, JSON is not enabled,
+      an upstream engine is refusing requests, or OpenClaw is using a config shape that
+      does not match its version. Check those before changing anything else.
+    </p>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>First diagnostics</p>
+      <h2>Collect the state before you guess.</h2>
+    </div>
+    <div class="codeblock">
+<pre><code># Services
+sudo systemctl status searxng --no-pager
+sudo systemctl status redis-server --no-pager
+redis-cli ping
+
+# OpenClaw
+openclaw doctor
+systemctl --user status openclaw-gateway.service --no-pager
+
+# Logs
+sudo journalctl -u searxng -n 100 --no-pager
+journalctl --user -u openclaw-gateway.service -n 100 --no-pager
+
+# JSON API and failed engines
+curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '{results: (.results | length), unresponsive: .unresponsive_engines}'
+
+# Full suite
+bash scripts/test-setup.sh</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Common issues</p>
+      <h2>Twelve failures with concrete fixes.</h2>
+    </div>
+
+    <div class="issue-list">
+      <details class="issue" id="issue-1-service-will-not-start" open>
+        <summary><span class="issue-num">01</span> SearXNG service will not start</summary>
+        <div class="issue-body">
+          <p class="symptom">Active: failed (Result: exit-code)</p>
+          <div class="codeblock">
+<pre><code>sudo journalctl -u searxng -n 100 --no-pager</code></pre>
+          </div>
+          <p>Common causes: port 8080 is in use, Redis is down, <code>settings.yml</code> is invalid, or file ownership is wrong.</p>
+          <h4>Port conflict</h4>
+          <div class="codeblock">
+<pre><code>sudo lsof -i :8080
+# or
+sudo ss -ltnp | grep :8080</code></pre>
+          </div>
+          <p>Stop the conflicting service. To move SearXNG instead, change <code>server.port</code> and the <code>--port</code> value in the unit's <code>ExecStart</code>, then:</p>
+          <div class="codeblock">
+<pre><code>sudo systemctl daemon-reload
+sudo systemctl restart searxng</code></pre>
+          </div>
+          <h4>Redis down</h4>
+          <div class="codeblock">
+<pre><code>sudo systemctl start redis-server
+sudo systemctl restart searxng</code></pre>
+          </div>
+          <h4>Invalid YAML</h4>
+          <div class="codeblock">
+<pre><code>python3 -c "import yaml; yaml.safe_load(open('/etc/searxng/settings.yml'))"
+sudo nano /etc/searxng/settings.yml
+sudo systemctl restart searxng</code></pre>
+          </div>
+          <h4>Ownership</h4>
+          <div class="codeblock">
+<pre><code>sudo chown -R searxng:searxng /usr/local/searxng /etc/searxng
+sudo chmod 644 /etc/searxng/settings.yml
+sudo systemctl restart searxng</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-2-json-api-returns-html">
+        <summary><span class="issue-num">02</span> JSON API returns HTML</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>curl "...format=json"</code> returns <code>&lt;!doctype html&gt;</code>.</p>
+          <p>Enable JSON output in <code>/etc/searxng/settings.yml</code>:</p>
+          <div class="codeblock">
+<pre><code>search:
+  formats:
+    - html
+    - json</code></pre>
+          </div>
+          <div class="codeblock">
+<pre><code>sudo systemctl restart searxng
+curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '.results | length'</code></pre>
+          </div>
+          <p>The same symptom appears when the plugin's <code>baseUrl</code> reaches an HTML page instead of SearXNG.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-3-no-results-returned">
+        <summary><span class="issue-num">03</span> No results returned</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>.results | length</code> is <code>0</code>.</p>
+          <h4>Check which engines failed</h4>
+          <div class="codeblock">
+<pre><code>curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '.unresponsive_engines'</code></pre>
+          </div>
+          <h4>Confirm an engine is enabled</h4>
+          <div class="codeblock">
+<pre><code>engines:
+  - name: google
+    engine: google
+    disabled: false</code></pre>
+          </div>
+          <h4>Check outbound network and clock</h4>
+          <div class="codeblock">
+<pre><code>curl -I https://www.google.com
+ping -c 3 duckduckgo.com
+timedatectl</code></pre>
+          </div>
+          <p>Upstream engines may temporarily throttle your server. Wait and retry, or disable the failing engine. There is no fixed warmup period.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-4-redis-connection-refused">
+        <summary><span class="issue-num">04</span> Redis connection refused</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>Error 111 connecting to localhost:6379. Connection refused.</code></p>
+          <div class="codeblock">
+<pre><code>sudo systemctl start redis-server
+sudo systemctl enable redis-server
+redis-cli ping</code></pre>
+          </div>
+          <p>If it still fails, inspect the Redis unit and config:</p>
+          <div class="codeblock">
+<pre><code>sudo systemctl status redis-server --no-pager
+sudo journalctl -u redis-server -n 50 --no-pager
+sudo nano /etc/redis/redis.conf</code></pre>
+          </div>
+          <p>Confirm <code>bind 127.0.0.1</code> and <code>port 6379</code>, then restart both services.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-5-port-8080-already-in-use">
+        <summary><span class="issue-num">05</span> Port 8080 already in use</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>OSError: [Errno 98] Address already in use</code></p>
+          <div class="codeblock">
+<pre><code>sudo lsof -i :8080
+# or
+sudo ss -ltnp | grep :8080</code></pre>
+          </div>
+          <p>Stop the conflicting process, or move SearXNG to 8081 in both <code>settings.yml</code> and the unit's <code>--port</code> argument. If you move it, update the OpenClaw <code>baseUrl</code> too.</p>
+          <div class="codeblock">
+<pre><code>sudo systemctl daemon-reload
+sudo systemctl restart searxng</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-6-openclaw-plugin-not-loading">
+        <summary><span class="issue-num">06</span> OpenClaw plugin not loading</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>openclaw doctor 2&gt;&amp;1 | grep -i searxng</code> returns nothing.</p>
+          <h4>Check the block for your release</h4>
+          <p>For the plugin this repository targets:</p>
+          <div class="codeblock">
+<pre><code>{
+  "plugins": {
+    "entries": {
+      "searxng-search": {
+        "enabled": true,
+        "config": {
+          "baseUrl": "http://localhost:8080"
+        }
+      }
+    }
+  }
+}</code></pre>
+          </div>
+          <p>Newer OpenClaw releases use the built-in <code>searxng</code> provider and keys under <code>plugins.entries.searxng.config.webSearch</code>. See <a href="/configuration/#openclaw-configuration">Configuration</a>.</p>
+          <div class="codeblock">
+<pre><code>openclaw doctor
+openclaw doctor --fix
+systemctl --user restart openclaw-gateway.service
+openclaw doctor 2&gt;&amp;1 | grep -i searxng</code></pre>
+          </div>
+          <p>Confirm SearXNG answers on the configured URL:</p>
+          <div class="codeblock">
+<pre><code>curl -s "http://localhost:8080/search?q=test&amp;format=json" | jq '.results | length'</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-7-context-overflow-in-openclaw">
+        <summary><span class="issue-num">07</span> Context overflow in OpenClaw</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>Error: prompt too large for the model</code></p>
+          <p>Reduce result volume first. For the <code>searxng-search</code> plugin:</p>
+          <div class="codeblock">
+<pre><code>{
+  "plugins": {
+    "entries": {
+      "searxng-search": {
+        "config": {
+          "defaultCount": 25
+        }
+      }
+    }
+  }
+}</code></pre>
+          </div>
+          <p>For the built-in provider, lower <code>tools.web.search.maxResults</code> and keep per-call <code>count</code> small. Then keep compaction enabled:</p>
+          <div class="codeblock">
+<pre><code>{
+  "compaction": {
+    "reserveTokensFloor": 80000,
+    "softThresholdTokens": 15000
+  }
+}</code></pre>
+          </div>
+          <p>Restart the gateway. Key names vary by release; check <code>openclaw doctor</code>.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-8-multi-page-search-returns-nothing">
+        <summary><span class="issue-num">08</span> Multi-page search returns nothing</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>pageno=2</code> returns an empty result array.</p>
+          <p>Not every engine supports pagination, and rate limiting can remove page 2. Try another query or a single engine:</p>
+          <div class="codeblock">
+<pre><code>curl -s "http://127.0.0.1:8080/search?q=python&amp;format=json&amp;pageno=2" | jq '.results | length'
+curl -s "http://127.0.0.1:8080/search?q=python&amp;format=json&amp;pageno=2&amp;engines=google" | jq '.results | length'</code></pre>
+          </div>
+          <p>If your SearXNG version supports <code>search.max_page</code>, you can raise the page limit:</p>
+          <div class="codeblock">
+<pre><code>search:
+  max_page: 10</code></pre>
+          </div>
+          <p>If the key is rejected, remove it and use the default pagination behavior.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-9-slow-searches">
+        <summary><span class="issue-num">09</span> Slow searches</summary>
+        <div class="issue-body">
+          <p class="symptom">Search takes more than roughly ten seconds.</p>
+          <ul class="check-list">
+            <li>Disable engines you do not need.</li>
+            <li>Inspect <code>unresponsive_engines</code>; one blocked engine can hold the response.</li>
+            <li>Lower <code>outgoing.request_timeout</code> and <code>max_request_timeout</code>.</li>
+            <li>Reduce pool sizes on a small host.</li>
+            <li>Check <code>free -h</code>, <code>df -h /</code>, and <code>uptime</code>.</li>
+          </ul>
+          <div class="codeblock">
+<pre><code>outgoing:
+  request_timeout: 5.0
+  max_request_timeout: 15.0
+  pool_connections: 50
+  pool_maxsize: 25</code></pre>
+          </div>
+          <p class="small">No benchmark in this repository promises a specific latency. Measure your own engine set.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-10-permission-denied">
+        <summary><span class="issue-num">10</span> Permission denied</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>PermissionError: [Errno 13] Permission denied</code></p>
+          <div class="codeblock">
+<pre><code>sudo chown -R searxng:searxng /usr/local/searxng
+sudo chown -R searxng:searxng /etc/searxng
+sudo chmod 755 /usr/local/searxng
+sudo chmod 644 /etc/searxng/settings.yml
+sudo systemctl restart searxng</code></pre>
+          </div>
+          <p>Do not run the SearXNG service as root. The supplied unit uses the <code>searxng</code> user.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-11-installer-preserved-an-old-configuration">
+        <summary><span class="issue-num">11</span> The installer kept my old configuration</summary>
+        <div class="issue-body">
+          <p>This is intentional. On a re-run, <code>install-all.sh</code> does not overwrite <code>/etc/searxng/settings.yml</code>; it writes a timestamped backup and prints the path.</p>
+          <div class="codeblock">
+<pre><code>ls -l /etc/searxng/settings.yml*
+sudo diff -u /etc/searxng/settings.yml.bak.YYYYMMDD-HHMMSS /etc/searxng/settings.yml
+sudo nano /etc/searxng/settings.yml
+sudo systemctl restart searxng</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-12-update-script-fails-at-git-pull">
+        <summary><span class="issue-num">12</span> Update script fails at <code>git pull</code></summary>
+        <div class="issue-body">
+          <p>The update script fast-forwards the branch checked out in <code>/usr/local/searxng/searxng-src</code>. Failure usually means local modifications or a diverged checkout.</p>
+          <div class="codeblock">
+<pre><code>sudo -u searxng -i
+cd /usr/local/searxng/searxng-src
+git status
+git branch --show-current
+git log --oneline -5
+exit</code></pre>
+          </div>
+          <p>Back up local changes before resetting. SearXNG's upstream default branch is <code>master</code>.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Error reference</p>
+      <h2>Quick mapping.</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Error</th><th scope="col">Meaning</th><th scope="col">Fix</th></tr></thead>
+        <tbody>
+          <tr><td><code>503 Service Unavailable</code></td><td>SearXNG is not running or starting</td><td><code>sudo systemctl start searxng</code>; check logs</td></tr>
+          <tr><td><code>504 Gateway Timeout</code></td><td>Upstream engine or proxy timeout</td><td>Raise <code>outgoing.request_timeout</code>; disable slow engines</td></tr>
+          <tr><td><code>429 Too Many Requests</code></td><td>SearXNG limiter or upstream throttle</td><td>Disable the limiter for loopback use; otherwise wait and reduce engines</td></tr>
+          <tr><td><code>Connection refused</code></td><td>Redis or SearXNG not listening</td><td><code>sudo systemctl start redis-server searxng</code></td></tr>
+          <tr><td><code>Address already in use</code></td><td>Port conflict</td><td>Change port or stop the conflicting process</td></tr>
+          <tr><td><code>JSONDecodeError</code></td><td>Client received HTML, not JSON</td><td>Enable <code>json</code> in <code>search.formats</code>; check <code>baseUrl</code></td></tr>
+          <tr><td><code>No such file or directory</code></td><td>Wrong path or missing install</td><td>Re-run <code>sudo bash scripts/install-all.sh</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="split">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-dot"></span>Collecting evidence</p>
+        <h2>Attach useful output, not a screenshot.</h2>
+        <div class="codeblock">
+<pre><code>{
+  echo "== OS =="; cat /etc/os-release
+  echo "== SearXNG =="; systemctl is-active searxng; systemctl is-enabled searxng
+  echo "== Redis =="; redis-cli ping
+  echo "== API =="; curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '{results: (.results | length), unresponsive: .unresponsive_engines}'
+  echo "== Logs =="; sudo journalctl -u searxng -n 50 --no-pager
+} &gt; /tmp/searxng-diagnostics.txt</code></pre>
+        </div>
+        <p class="small">Review the file for secrets, hostnames, and public IPs before posting it.</p>
+      </div>
+      <div>
+        <div class="link-cards link-cards-stack">
+          <a class="link-card" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/issues" rel="noopener">
+            <span class="link-card-kicker">Support</span>
+            <strong>GitHub Issues</strong>
+            <span>Include the diagnostics block and your OpenClaw version.</span>
+          </a>
+          <a class="link-card" href="/faq/">
+            <span class="link-card-kicker">Questions</span>
+            <strong>FAQ</strong>
+            <span>Cost, privacy, limits, and compatibility.</span>
+          </a>
+          <a class="link-card" href="/maintenance/">
+            <span class="link-card-kicker">Routine</span>
+            <strong>Maintenance</strong>
+            <span>Update, backup, logs, and uninstall commands.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+    <nav class="container page-nav" aria-label="Previous and next pages">
+      <a class="page-nav-link prev" href="/security/">
+        <span class="page-nav-label">Previous</span>
+        <span class="page-nav-title">Security</span>
+      </a>
+      <a class="page-nav-link next" href="/faq/">
+        <span class="page-nav-label">Next</span>
+        <span class="page-nav-title">FAQ</span>
+      </a>
+    </nav>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="/" aria-label="Documentation home">
+          <svg class="brand-mark" width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="14" cy="14" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M20.5 20.5 27 27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="14" cy="14" r="2.4" fill="currentColor"/>
+          </svg>
+          <span class="brand-text">searxng<span class="brand-sep">/</span>openclaw</span>
+        </a>
+        <p>Local, privacy-respecting search for your OpenClaw agent. No search API keys, no per-query bill.</p>
+        <p class="footer-mono">searxng.danubelabs.net</p>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Guide</h2>
+        <ul class="footer-links">
+          <li><a href="/install/">Install</a></li>
+          <li><a href="/configuration/">Configuration</a></li>
+          <li><a href="/usage/">Usage</a></li>
+          <li><a href="/maintenance/">Maintenance</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Reference</h2>
+        <ul class="footer-links">
+          <li><a href="/security/">Security</a></li>
+          <li><a href="/troubleshooting/">Troubleshooting</a></li>
+          <li><a href="/faq/">FAQ</a></li>
+          <li><a href="/about/">About &amp; license</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Project</h2>
+        <ul class="footer-links">
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup" rel="noopener">GitHub repository</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/issues" rel="noopener">Issues</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/CHANGELOG.md" rel="noopener">Changelog</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/LICENSE" rel="noopener">MIT license</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 FiredMosquito831. MIT licensed.</p>
+      <p>Version 1.1.0 · Updated 2026-10-22 · Not affiliated with SearXNG or OpenClaw.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>

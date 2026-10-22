@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow"><span class="eyebrow-dot"></span>Troubleshooting</p>
+    <h1>Isolate the layer, then fix it.</h1>
+    <p class="lede">
+      Most failures are one of four things: the service is down, JSON is not enabled,
+      an upstream engine is refusing requests, or OpenClaw is using a config shape that
+      does not match its version. Check those before changing anything else.
+    </p>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>First diagnostics</p>
+      <h2>Collect the state before you guess.</h2>
+    </div>
+    <div class="codeblock">
+<pre><code># Services
+sudo systemctl status searxng --no-pager
+sudo systemctl status redis-server --no-pager
+redis-cli ping
+
+# OpenClaw
+openclaw doctor
+systemctl --user status openclaw-gateway.service --no-pager
+
+# Logs
+sudo journalctl -u searxng -n 100 --no-pager
+journalctl --user -u openclaw-gateway.service -n 100 --no-pager
+
+# JSON API and failed engines
+curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '{results: (.results | length), unresponsive: .unresponsive_engines}'
+
+# Full suite
+bash scripts/test-setup.sh</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Common issues</p>
+      <h2>Twelve failures with concrete fixes.</h2>
+    </div>
+
+    <div class="issue-list">
+      <details class="issue" id="issue-1-service-will-not-start" open>
+        <summary><span class="issue-num">01</span> SearXNG service will not start</summary>
+        <div class="issue-body">
+          <p class="symptom">Active: failed (Result: exit-code)</p>
+          <div class="codeblock">
+<pre><code>sudo journalctl -u searxng -n 100 --no-pager</code></pre>
+          </div>
+          <p>Common causes: port 8080 is in use, Redis is down, <code>settings.yml</code> is invalid, or file ownership is wrong.</p>
+          <h4>Port conflict</h4>
+          <div class="codeblock">
+<pre><code>sudo lsof -i :8080
+# or
+sudo ss -ltnp | grep :8080</code></pre>
+          </div>
+          <p>Stop the conflicting service. To move SearXNG instead, change <code>server.port</code> and the <code>--port</code> value in the unit's <code>ExecStart</code>, then:</p>
+          <div class="codeblock">
+<pre><code>sudo systemctl daemon-reload
+sudo systemctl restart searxng</code></pre>
+          </div>
+          <h4>Redis down</h4>
+          <div class="codeblock">
+<pre><code>sudo systemctl start redis-server
+sudo systemctl restart searxng</code></pre>
+          </div>
+          <h4>Invalid YAML</h4>
+          <div class="codeblock">
+<pre><code>python3 -c "import yaml; yaml.safe_load(open('/etc/searxng/settings.yml'))"
+sudo nano /etc/searxng/settings.yml
+sudo systemctl restart searxng</code></pre>
+          </div>
+          <h4>Ownership</h4>
+          <div class="codeblock">
+<pre><code>sudo chown -R searxng:searxng /usr/local/searxng /etc/searxng
+sudo chmod 644 /etc/searxng/settings.yml
+sudo systemctl restart searxng</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-2-json-api-returns-html">
+        <summary><span class="issue-num">02</span> JSON API returns HTML</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>curl "...format=json"</code> returns <code>&lt;!doctype html&gt;</code>.</p>
+          <p>Enable JSON output in <code>/etc/searxng/settings.yml</code>:</p>
+          <div class="codeblock">
+<pre><code>search:
+  formats:
+    - html
+    - json</code></pre>
+          </div>
+          <div class="codeblock">
+<pre><code>sudo systemctl restart searxng
+curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '.results | length'</code></pre>
+          </div>
+          <p>The same symptom appears when the plugin's <code>baseUrl</code> reaches an HTML page instead of SearXNG.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-3-no-results-returned">
+        <summary><span class="issue-num">03</span> No results returned</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>.results | length</code> is <code>0</code>.</p>
+          <h4>Check which engines failed</h4>
+          <div class="codeblock">
+<pre><code>curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '.unresponsive_engines'</code></pre>
+          </div>
+          <h4>Confirm an engine is enabled</h4>
+          <div class="codeblock">
+<pre><code>engines:
+  - name: google
+    engine: google
+    disabled: false</code></pre>
+          </div>
+          <h4>Check outbound network and clock</h4>
+          <div class="codeblock">
+<pre><code>curl -I https://www.google.com
+ping -c 3 duckduckgo.com
+timedatectl</code></pre>
+          </div>
+          <p>Upstream engines may temporarily throttle your server. Wait and retry, or disable the failing engine. There is no fixed warmup period.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-4-redis-connection-refused">
+        <summary><span class="issue-num">04</span> Redis connection refused</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>Error 111 connecting to localhost:6379. Connection refused.</code></p>
+          <div class="codeblock">
+<pre><code>sudo systemctl start redis-server
+sudo systemctl enable redis-server
+redis-cli ping</code></pre>
+          </div>
+          <p>If it still fails, inspect the Redis unit and config:</p>
+          <div class="codeblock">
+<pre><code>sudo systemctl status redis-server --no-pager
+sudo journalctl -u redis-server -n 50 --no-pager
+sudo nano /etc/redis/redis.conf</code></pre>
+          </div>
+          <p>Confirm <code>bind 127.0.0.1</code> and <code>port 6379</code>, then restart both services.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-5-port-8080-already-in-use">
+        <summary><span class="issue-num">05</span> Port 8080 already in use</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>OSError: [Errno 98] Address already in use</code></p>
+          <div class="codeblock">
+<pre><code>sudo lsof -i :8080
+# or
+sudo ss -ltnp | grep :8080</code></pre>
+          </div>
+          <p>Stop the conflicting process, or move SearXNG to 8081 in both <code>settings.yml</code> and the unit's <code>--port</code> argument. If you move it, update the OpenClaw <code>baseUrl</code> too.</p>
+          <div class="codeblock">
+<pre><code>sudo systemctl daemon-reload
+sudo systemctl restart searxng</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-6-openclaw-plugin-not-loading">
+        <summary><span class="issue-num">06</span> OpenClaw plugin not loading</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>openclaw doctor 2&gt;&amp;1 | grep -i searxng</code> returns nothing.</p>
+          <h4>Check the block for your release</h4>
+          <p>For the plugin this repository targets:</p>
+          <div class="codeblock">
+<pre><code>{
+  "plugins": {
+    "entries": {
+      "searxng-search": {
+        "enabled": true,
+        "config": {
+          "baseUrl": "http://localhost:8080"
+        }
+      }
+    }
+  }
+}</code></pre>
+          </div>
+          <p>Newer OpenClaw releases use the built-in <code>searxng</code> provider and keys under <code>plugins.entries.searxng.config.webSearch</code>. See <a href="/configuration/#openclaw-configuration">Configuration</a>.</p>
+          <div class="codeblock">
+<pre><code>openclaw doctor
+openclaw doctor --fix
+systemctl --user restart openclaw-gateway.service
+openclaw doctor 2&gt;&amp;1 | grep -i searxng</code></pre>
+          </div>
+          <p>Confirm SearXNG answers on the configured URL:</p>
+          <div class="codeblock">
+<pre><code>curl -s "http://localhost:8080/search?q=test&amp;format=json" | jq '.results | length'</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-7-context-overflow-in-openclaw">
+        <summary><span class="issue-num">07</span> Context overflow in OpenClaw</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>Error: prompt too large for the model</code></p>
+          <p>Reduce result volume first. For the <code>searxng-search</code> plugin:</p>
+          <div class="codeblock">
+<pre><code>{
+  "plugins": {
+    "entries": {
+      "searxng-search": {
+        "config": {
+          "defaultCount": 25
+        }
+      }
+    }
+  }
+}</code></pre>
+          </div>
+          <p>For the built-in provider, lower <code>tools.web.search.maxResults</code> and keep per-call <code>count</code> small. Then keep compaction enabled:</p>
+          <div class="codeblock">
+<pre><code>{
+  "compaction": {
+    "reserveTokensFloor": 80000,
+    "softThresholdTokens": 15000
+  }
+}</code></pre>
+          </div>
+          <p>Restart the gateway. Key names vary by release; check <code>openclaw doctor</code>.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-8-multi-page-search-returns-nothing">
+        <summary><span class="issue-num">08</span> Multi-page search returns nothing</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>pageno=2</code> returns an empty result array.</p>
+          <p>Not every engine supports pagination, and rate limiting can remove page 2. Try another query or a single engine:</p>
+          <div class="codeblock">
+<pre><code>curl -s "http://127.0.0.1:8080/search?q=python&amp;format=json&amp;pageno=2" | jq '.results | length'
+curl -s "http://127.0.0.1:8080/search?q=python&amp;format=json&amp;pageno=2&amp;engines=google" | jq '.results | length'</code></pre>
+          </div>
+          <p>If your SearXNG version supports <code>search.max_page</code>, you can raise the page limit:</p>
+          <div class="codeblock">
+<pre><code>search:
+  max_page: 10</code></pre>
+          </div>
+          <p>If the key is rejected, remove it and use the default pagination behavior.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-9-slow-searches">
+        <summary><span class="issue-num">09</span> Slow searches</summary>
+        <div class="issue-body">
+          <p class="symptom">Search takes more than roughly ten seconds.</p>
+          <ul class="check-list">
+            <li>Disable engines you do not need.</li>
+            <li>Inspect <code>unresponsive_engines</code>; one blocked engine can hold the response.</li>
+            <li>Lower <code>outgoing.request_timeout</code> and <code>max_request_timeout</code>.</li>
+            <li>Reduce pool sizes on a small host.</li>
+            <li>Check <code>free -h</code>, <code>df -h /</code>, and <code>uptime</code>.</li>
+          </ul>
+          <div class="codeblock">
+<pre><code>outgoing:
+  request_timeout: 5.0
+  max_request_timeout: 15.0
+  pool_connections: 50
+  pool_maxsize: 25</code></pre>
+          </div>
+          <p class="small">No benchmark in this repository promises a specific latency. Measure your own engine set.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-10-permission-denied">
+        <summary><span class="issue-num">10</span> Permission denied</summary>
+        <div class="issue-body">
+          <p class="symptom"><code>PermissionError: [Errno 13] Permission denied</code></p>
+          <div class="codeblock">
+<pre><code>sudo chown -R searxng:searxng /usr/local/searxng
+sudo chown -R searxng:searxng /etc/searxng
+sudo chmod 755 /usr/local/searxng
+sudo chmod 644 /etc/searxng/settings.yml
+sudo systemctl restart searxng</code></pre>
+          </div>
+          <p>Do not run the SearXNG service as root. The supplied unit uses the <code>searxng</code> user.</p>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-11-installer-preserved-an-old-configuration">
+        <summary><span class="issue-num">11</span> The installer kept my old configuration</summary>
+        <div class="issue-body">
+          <p>This is intentional. On a re-run, <code>install-all.sh</code> does not overwrite <code>/etc/searxng/settings.yml</code>; it writes a timestamped backup and prints the path.</p>
+          <div class="codeblock">
+<pre><code>ls -l /etc/searxng/settings.yml*
+sudo diff -u /etc/searxng/settings.yml.bak.YYYYMMDD-HHMMSS /etc/searxng/settings.yml
+sudo nano /etc/searxng/settings.yml
+sudo systemctl restart searxng</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="issue" id="issue-12-update-script-fails-at-git-pull">
+        <summary><span class="issue-num">12</span> Update script fails at <code>git pull</code></summary>
+        <div class="issue-body">
+          <p>The update script fast-forwards the branch checked out in <code>/usr/local/searxng/searxng-src</code>. Failure usually means local modifications or a diverged checkout.</p>
+          <div class="codeblock">
+<pre><code>sudo -u searxng -i
+cd /usr/local/searxng/searxng-src
+git status
+git branch --show-current
+git log --oneline -5
+exit</code></pre>
+          </div>
+          <p>Back up local changes before resetting. SearXNG's upstream default branch is <code>master</code>.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Error reference</p>
+      <h2>Quick mapping.</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Error</th><th scope="col">Meaning</th><th scope="col">Fix</th></tr></thead>
+        <tbody>
+          <tr><td><code>503 Service Unavailable</code></td><td>SearXNG is not running or starting</td><td><code>sudo systemctl start searxng</code>; check logs</td></tr>
+          <tr><td><code>504 Gateway Timeout</code></td><td>Upstream engine or proxy timeout</td><td>Raise <code>outgoing.request_timeout</code>; disable slow engines</td></tr>
+          <tr><td><code>429 Too Many Requests</code></td><td>SearXNG limiter or upstream throttle</td><td>Disable the limiter for loopback use; otherwise wait and reduce engines</td></tr>
+          <tr><td><code>Connection refused</code></td><td>Redis or SearXNG not listening</td><td><code>sudo systemctl start redis-server searxng</code></td></tr>
+          <tr><td><code>Address already in use</code></td><td>Port conflict</td><td>Change port or stop the conflicting process</td></tr>
+          <tr><td><code>JSONDecodeError</code></td><td>Client received HTML, not JSON</td><td>Enable <code>json</code> in <code>search.formats</code>; check <code>baseUrl</code></td></tr>
+          <tr><td><code>No such file or directory</code></td><td>Wrong path or missing install</td><td>Re-run <code>sudo bash scripts/install-all.sh</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="split">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-dot"></span>Collecting evidence</p>
+        <h2>Attach useful output, not a screenshot.</h2>
+        <div class="codeblock">
+<pre><code>{
+  echo "== OS =="; cat /etc/os-release
+  echo "== SearXNG =="; systemctl is-active searxng; systemctl is-enabled searxng
+  echo "== Redis =="; redis-cli ping
+  echo "== API =="; curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '{results: (.results | length), unresponsive: .unresponsive_engines}'
+  echo "== Logs =="; sudo journalctl -u searxng -n 50 --no-pager
+} &gt; /tmp/searxng-diagnostics.txt</code></pre>
+        </div>
+        <p class="small">Review the file for secrets, hostnames, and public IPs before posting it.</p>
+      </div>
+      <div>
+        <div class="link-cards link-cards-stack">
+          <a class="link-card" href="{{ repo_url }}/issues" rel="noopener">
+            <span class="link-card-kicker">Support</span>
+            <strong>GitHub Issues</strong>
+            <span>Include the diagnostics block and your OpenClaw version.</span>
+          </a>
+          <a class="link-card" href="/faq/">
+            <span class="link-card-kicker">Questions</span>
+            <strong>FAQ</strong>
+            <span>Cost, privacy, limits, and compatibility.</span>
+          </a>
+          <a class="link-card" href="/maintenance/">
+            <span class="link-card-kicker">Routine</span>
+            <strong>Maintenance</strong>
+            <span>Update, backup, logs, and uninstall commands.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

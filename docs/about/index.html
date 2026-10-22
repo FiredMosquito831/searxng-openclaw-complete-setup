@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About this project and its MIT license</title>
+  <meta name="description" content="About the SearXNG + OpenClaw setup: maintainer, license, project scope, documentation sources, and how to contribute or report issues.">
+  <meta name="keywords" content="SearXNG OpenClaw project, MIT license, Danube Labs, contribute, documentation">
+  <meta name="author" content="FiredMosquito831">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://searxng.danubelabs.net/about/">
+
+  <meta name="theme-color" content="#070b0f">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="SearXNG + OpenClaw">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="About this project and its MIT license">
+  <meta property="og:description" content="About the SearXNG + OpenClaw setup: maintainer, license, project scope, documentation sources, and how to contribute or report issues.">
+  <meta property="og:url" content="https://searxng.danubelabs.net/about/">
+  <meta property="og:image" content="https://searxng.danubelabs.net/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="SearXNG + OpenClaw: private, self-hosted search with no API keys.">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="About this project and its MIT license">
+  <meta name="twitter:description" content="About the SearXNG + OpenClaw setup: maintainer, license, project scope, documentation sources, and how to contribute or report issues.">
+  <meta name="twitter:image" content="https://searxng.danubelabs.net/og.png">
+  <meta name="twitter:image:alt" content="SearXNG + OpenClaw documentation">
+
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "FiredMosquito831",
+  "url": "https://github.com/FiredMosquito831",
+  "worksFor": {
+    "@type": "Organization",
+    "name": "Danube Labs"
+  }
+}</script>
+  <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://searxng.danubelabs.net/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "About",
+      "item": "https://searxng.danubelabs.net/about/"
+    }
+  ]
+}</script>
+</head>
+<body class="page-about">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="mesh-bg" aria-hidden="true">
+    <span class="mesh-node n1"></span>
+    <span class="mesh-node n2"></span>
+    <span class="mesh-node n3"></span>
+    <span class="mesh-node n4"></span>
+    <span class="mesh-node n5"></span>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="SearXNG + OpenClaw documentation home">
+        <svg class="brand-mark" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="14" cy="14" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M20.5 20.5 27 27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="14" cy="14" r="2.4" fill="currentColor"/>
+          <path d="M14 5.5v3M14 19.5v3M5.5 14h3M19.5 14h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-text">searxng<span class="brand-sep">/</span>openclaw</span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="sr-only">Toggle navigation</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/install/">Install</a>
+        <a href="/configuration/">Configure</a>
+        <a href="/usage/">Usage</a>
+        <a href="/maintenance/">Maintain</a>
+        <a href="/security/">Security</a>
+        <a href="/troubleshooting/">Troubleshooting</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/about/" aria-current="page">About</a>
+        <a class="nav-github" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.06-.49.06-.49.81.06 1.23.83 1.23.83.72 1.23 1.89.88 2.35.67.07-.52.28-.88.51-1.08-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow"><span class="eyebrow-dot"></span>About</p>
+    <h1>A small setup project with a narrow claim.</h1>
+    <p class="lede">
+      This repository installs and documents a local SearXNG search backend for
+      OpenClaw. It is maintained by FiredMosquito831 at Danube Labs and released under the
+      MIT License.
+    </p>
+    <ul class="meta-strip" aria-label="Project facts">
+      <li><span>Version</span>1.1.0</li>
+      <li><span>License</span>MIT</li>
+      <li><span>Site</span><code>searxng.danubelabs.net</code></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container">
+    <div class="split">
+      <div>
+        <h2>What the project tries to be</h2>
+        <p>A reproducible install path, a configuration that matches the OpenClaw plugin it targets, and documentation that names its limits. The goal is a search endpoint you can run on a small Linux host and reason about.</p>
+        <h2>What it is not</h2>
+        <ul class="cross-list">
+          <li>A public search engine or a hardened multi-tenant service.</li>
+          <li>A packaged OpenClaw plugin. It configures one.</li>
+          <li>A Docker deployment. That option is not implemented.</li>
+          <li>An anonymity network. Upstream engines see your server's IP.</li>
+          <li>A benchmark or capacity-planning guide. No latency or memory figures are promised.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <p class="panel-kicker">Maintainer</p>
+        <h3>FiredMosquito831 · Danube Labs</h3>
+        <p>The documentation site is published at <a href="https://searxng.danubelabs.net">searxng.danubelabs.net</a> and generated from this repository.</p>
+        <ul class="footer-links">
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup" rel="noopener">GitHub repository</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/issues" rel="noopener">Issues</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/CONTRIBUTING.md" rel="noopener">Contributing</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/SECURITY.md" rel="noopener">Security policy</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>License</p>
+      <h2>MIT, without extra conditions.</h2>
+      <p class="section-lede">Copyright &copy; 2026 FiredMosquito831. The license permits commercial use, modification, distribution, and private use, provided the copyright and permission notice are included.</p>
+    </div>
+    <div class="codeblock">
+<pre><code>MIT License
+
+Copyright (c) 2026 FiredMosquito831
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</code></pre>
+    </div>
+    <p class="small">The canonical license text is <a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/LICENSE">LICENSE</a>. SearXNG and OpenClaw are separate projects with their own licenses and trademarks.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>How this site is built</p>
+      <h2>Generated, checked, and honest about its sources.</h2>
+      <p class="section-lede">
+        The site is a static build from Jinja2 templates in <code>site/</code>. The
+        generator validates internal links, canonical URLs, required metadata, the
+        sitemap, and the absence of known placeholder strings. CI runs the same
+        <code>--check</code> mode.
+      </p>
+    </div>
+    <div class="three-up">
+      <div class="mini-card">
+        <span class="mini-card-index">01</span>
+        <h3>Source</h3>
+        <p>Templates and content live in the repository. The Markdown guides remain the canonical long-form documentation.</p>
+      </div>
+      <div class="mini-card">
+        <span class="mini-card-index">02</span>
+        <h3>Build</h3>
+        <p><code>python scripts/build_site.py</code> writes <code>docs/</code>. <code>--check</code> fails if the committed output is stale.</p>
+      </div>
+      <div class="mini-card">
+        <span class="mini-card-index">03</span>
+        <h3>No fake screenshots</h3>
+        <p>Command blocks contain real commands. The social card is a designed HTML render, not a fabricated screenshot of a running system. Fonts are self-hosted, so reading the docs does not call a third-party font service: <a href="/assets/fonts/LICENSE-Inter.txt">Inter license</a>, <a href="/assets/fonts/LICENSE-IBM-Plex.txt">IBM Plex license</a>.</p>
+      </div>
+    </div>
+    <div class="link-cards">
+      <a class="link-card" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/REPOSITORY_SUMMARY.md" rel="noopener">
+        <span class="link-card-kicker">Technical map</span>
+        <strong>Repository summary</strong>
+        <span>File map, request flow, and script behavior.</span>
+      </a>
+      <a class="link-card" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/FINAL_100_PERCENT_COMPLETE.md" rel="noopener">
+        <span class="link-card-kicker">Scope</span>
+        <strong>Verified scope</strong>
+        <span>What is tested, what requires a Linux host, and what is not implemented.</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="split">
+      <div>
+        <h2>Acknowledgements</h2>
+        <p>SearXNG for the metasearch engine. OpenClaw for the agent and its external-content handling. Redis for the local cache. The Debian and Ubuntu maintainers for the packaging this setup relies on.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <p>Use GitHub issues for bugs and documentation problems. Use the security advisory flow for vulnerabilities. There is no guaranteed response time; this is a volunteer project.</p>
+        <div class="button-row">
+          <a class="btn btn-primary" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/issues" rel="noopener">Issues</a>
+          <a class="btn btn-ghost" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/security/advisories/new" rel="noopener">Report a vulnerability</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+    <nav class="container page-nav" aria-label="Previous and next pages">
+      <a class="page-nav-link prev" href="/faq/">
+        <span class="page-nav-label">Previous</span>
+        <span class="page-nav-title">FAQ</span>
+      </a>
+    </nav>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="/" aria-label="Documentation home">
+          <svg class="brand-mark" width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="14" cy="14" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M20.5 20.5 27 27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="14" cy="14" r="2.4" fill="currentColor"/>
+          </svg>
+          <span class="brand-text">searxng<span class="brand-sep">/</span>openclaw</span>
+        </a>
+        <p>Local, privacy-respecting search for your OpenClaw agent. No search API keys, no per-query bill.</p>
+        <p class="footer-mono">searxng.danubelabs.net</p>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Guide</h2>
+        <ul class="footer-links">
+          <li><a href="/install/">Install</a></li>
+          <li><a href="/configuration/">Configuration</a></li>
+          <li><a href="/usage/">Usage</a></li>
+          <li><a href="/maintenance/">Maintenance</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Reference</h2>
+        <ul class="footer-links">
+          <li><a href="/security/">Security</a></li>
+          <li><a href="/troubleshooting/">Troubleshooting</a></li>
+          <li><a href="/faq/">FAQ</a></li>
+          <li><a href="/about/">About &amp; license</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Project</h2>
+        <ul class="footer-links">
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup" rel="noopener">GitHub repository</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/issues" rel="noopener">Issues</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/CHANGELOG.md" rel="noopener">Changelog</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/LICENSE" rel="noopener">MIT license</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 FiredMosquito831. MIT licensed.</p>
+      <p>Version 1.1.0 · Updated 2026-10-22 · Not affiliated with SearXNG or OpenClaw.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>

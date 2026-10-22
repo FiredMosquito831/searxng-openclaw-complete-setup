@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://searxng.danubelabs.net/sitemap.xml

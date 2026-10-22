@@ -1,0 +1,227 @@
+[
+  {
+    "group": "General",
+    "q": "What is SearXNG?",
+    "a": "<p>SearXNG is a free, open-source metasearch engine. It sends a query to the search engines you enable, then combines their results into one list. It does not require a commercial search API key and does not build a user profile.</p>"
+  },
+  {
+    "group": "General",
+    "q": "What does this repository add?",
+    "a": "<p>It installs SearXNG on Ubuntu or Debian, enables the JSON API, configures Redis, creates a systemd service, and supplies scripts and configuration for using SearXNG from OpenClaw. It does not package SearXNG or OpenClaw.</p>"
+  },
+  {
+    "group": "General",
+    "q": "Why use SearXNG with OpenClaw?",
+    "a": "<p>No per-query API bill and no search API key. Results can come from many engines instead of one vendor. The instance is local, and you control which engines are enabled and how results are cached.</p>"
+  },
+  {
+    "group": "General",
+    "q": "Is this legal?",
+    "a": "<p>SearXNG is open-source software that queries publicly reachable search engines on your behalf. You are responsible for complying with each upstream engine's terms and local law. A single-user local instance is a different situation from a heavily used public instance.</p>"
+  },
+  {
+    "group": "General",
+    "q": "Do I need technical skills?",
+    "a": "<p>You need to run a few commands with <code>sudo</code>. The automated installer handles the steps; the manual guide explains each one. Basic Linux familiarity helps when debugging.</p>"
+  },
+  {
+    "group": "General",
+    "q": "How many search engines are included?",
+    "a": "<p>SearXNG ships with 70+ built-in engines. The installer enables seven: Google, DuckDuckGo, Brave, Bing, Wikipedia, GitHub, and YouTube. Add more in <code>/etc/searxng/settings.yml</code>.</p>"
+  },
+  {
+    "group": "General",
+    "q": "What OpenClaw version is this for?",
+    "a": "<p>The scripts and configuration were tested with OpenClaw 2026.2.23 and the <code>searxng-search</code> plugin. Newer releases also include a built-in SearXNG provider with different keys. See the <a href=\"/configuration/#openclaw-configuration\">configuration page</a>.</p>"
+  },
+  {
+    "group": "General",
+    "q": "Does this repository include the OpenClaw plugin?",
+    "a": "<p>No. It configures an existing plugin or provider. <code>configure-openclaw.sh</code> writes the <code>searxng-search</code> block; the plugin itself must be installed in OpenClaw. The built-in provider in newer releases is installed with <code>openclaw plugins install @openclaw/searxng-plugin</code>.</p>"
+  },
+  {
+    "group": "General",
+    "q": "Is this affiliated with SearXNG or OpenClaw?",
+    "a": "<p>No. It is an independent setup repository. SearXNG and OpenClaw have their own licenses, maintainers, and trademarks.</p>"
+  },
+  {
+    "group": "Cost",
+    "q": "Is this really free?",
+    "a": "<p>The software is MIT-licensed and SearXNG has no license fee. There is no search API subscription and no per-query charge. You pay for the machine, electricity, and bandwidth you already use.</p>"
+  },
+  {
+    "group": "Cost",
+    "q": "What are the ongoing costs?",
+    "a": "<p>Nothing beyond hosting. A small VPS or an existing home server is enough. Running it on hardware you already own has no additional service fee.</p>"
+  },
+  {
+    "group": "Cost",
+    "q": "How much does it save compared with search APIs?",
+    "a": "<p>It avoids metered search API fees entirely. Commercial prices and free tiers change, so this repository does not quote a fixed saving. Compare current vendor pricing with your actual query volume.</p>"
+  },
+  {
+    "group": "Cost",
+    "q": "Are there hidden limits?",
+    "a": "<p>No billing limits, but upstream engines can rate-limit or block your server. SearXNG reports them in <code>unresponsive_engines</code>. \"Unlimited\" means no API quota from this stack, not a guarantee that every engine answers every query.</p>"
+  },
+  {
+    "group": "Installation",
+    "q": "How long does installation take?",
+    "a": "<p>About 15–30 minutes on a small VPS. Most of the time is apt and pip downloads and the editable SearXNG install.</p>"
+  },
+  {
+    "group": "Installation",
+    "q": "What operating systems are supported?",
+    "a": "<p>Ubuntu 20.04+, Debian 11+, and WSL2 with an Ubuntu distribution. The installer checks <code>/etc/os-release</code> and refuses other distributions. Fedora, RHEL, Arch, and macOS are not supported by the scripts.</p>"
+  },
+  {
+    "group": "Installation",
+    "q": "Can I install on Windows or macOS?",
+    "a": "<p>On Windows, use WSL2 with Ubuntu. macOS is not supported by these scripts; the service unit and package steps are Linux-specific. Docker is not implemented in this repository.</p>"
+  },
+  {
+    "group": "Installation",
+    "q": "Do I need a separate server?",
+    "a": "<p>No. It runs on your existing Linux machine. Minimum: 512 MB RAM and 1 GB free disk. Recommended: 2 GB RAM and 5 GB free disk. A desktop used for other work is fine for a single user.</p>"
+  },
+  {
+    "group": "Installation",
+    "q": "Can I run it on a Raspberry Pi?",
+    "a": "<p>Probably, with a 64-bit Raspberry Pi OS or Ubuntu install and at least 2 GB of RAM, but this repository has not tested it. The installer requires a Debian/Ubuntu <code>/etc/os-release</code>, so Raspberry Pi OS may be rejected even though it is Debian-derived.</p>"
+  },
+  {
+    "group": "Installation",
+    "q": "Do I have to configure OpenClaw manually?",
+    "a": "<p>You have to run <code>bash scripts/configure-openclaw.sh</code> as your OpenClaw user. The installer does not modify <code>~/.openclaw/openclaw.json</code>. If you skip it, SearXNG works standalone but OpenClaw will not know about it.</p>"
+  },
+  {
+    "group": "Installation",
+    "q": "Can I rerun the installer?",
+    "a": "<p>Yes. It preserves an existing <code>/etc/searxng/settings.yml</code> and writes a timestamped backup. It also detects an existing <code>searxng</code> user, source checkout, and virtual environment.</p>"
+  },
+  {
+    "group": "Privacy & security",
+    "q": "Is my search history private?",
+    "a": "<p>SearXNG does not log queries, create accounts, or build profiles by default. It caches results temporarily in local Redis. Your upstream requests still come from your server's IP address, so the engines can see that IP. SearXNG is not an anonymity network such as Tor.</p>"
+  },
+  {
+    "group": "Privacy & security",
+    "q": "Is it secure?",
+    "a": "<p>For a single-user loopback deployment, the default posture is reasonable: SearXNG binds to <code>127.0.0.1</code>, Redis is local, no API keys are stored, and the systemd unit uses <code>NoNewPrivileges</code>, <code>ProtectSystem=strict</code>, <code>ProtectHome</code>, and <code>PrivateTmp</code>. There is no authentication or TLS because the service is not exposed.</p>"
+  },
+  {
+    "group": "Privacy & security",
+    "q": "Can others on my network use it?",
+    "a": "<p>Not by default. It listens only on loopback. To share it, change the bind address and add firewall rules, authentication, and TLS. Read the <a href=\"/security/\">security page</a> first; the bundled configuration is not hardened for multi-user exposure.</p>"
+  },
+  {
+    "group": "Privacy & security",
+    "q": "Does SearXNG store my data?",
+    "a": "<p>It does not store queries or user profiles. Redis caches results temporarily. Logs are handled by systemd/journald and may contain service errors. Search engine responses are not retained as a history.</p>"
+  },
+  {
+    "group": "Privacy & security",
+    "q": "What about prompt injection from search results?",
+    "a": "<p>OpenClaw treats web search results as untrusted external content. It wraps them in <code>&lt;&lt;&lt;EXTERNAL_UNTRUSTED_CONTENT ...&gt;&gt;&gt;</code> boundary markers and strips chat-template special tokens before they reach the model. That reduces one class of attack but does not replace tool allowlists, exec approvals, sandboxing, or channel policy. See the <a href=\"/security/\">security page</a>.</p>"
+  },
+  {
+    "group": "Privacy & security",
+    "q": "Is the SearXNG port exposed to the internet?",
+    "a": "<p>No, the installed configuration binds to <code>127.0.0.1:8080</code>. If you deliberately change that, you own the TLS, authentication, rate limiting, and patching work.</p>"
+  },
+  {
+    "group": "Usage",
+    "q": "How do I search?",
+    "a": "<p>Three ways: the web UI at <code>http://127.0.0.1:8080</code>; OpenClaw in natural language; or the JSON API with <code>curl \"http://127.0.0.1:8080/search?q=python&amp;format=json\"</code>.</p>"
+  },
+  {
+    "group": "Usage",
+    "q": "How many results can I get?",
+    "a": "<p>A single SearXNG page usually returns a few dozen results, depending on engines and upstream rate limits. Pagination uses <code>pageno=2</code>, <code>pageno=3</code>, and so on. The <code>searxng-search</code> plugin template requests 100 results and enables multi-page retrieval. OpenClaw's built-in provider caps a single call's <code>count</code> at 10.</p>"
+  },
+  {
+    "group": "Usage",
+    "q": "Can I search specific categories?",
+    "a": "<p>Yes. Categories include <code>general</code>, <code>images</code>, <code>videos</code>, <code>news</code>, <code>it</code>, and <code>science</code>. Example: <code>curl \"http://127.0.0.1:8080/search?q=python&amp;categories=it,science&amp;format=json\"</code>.</p>"
+  },
+  {
+    "group": "Usage",
+    "q": "Can I restrict results by time?",
+    "a": "<p>Yes, with <code>time_range</code> where an engine supports it: <code>curl \"http://127.0.0.1:8080/search?q=climate&amp;time_range=month&amp;format=json\"</code>.</p>"
+  },
+  {
+    "group": "Usage",
+    "q": "Which engines are enabled?",
+    "a": "<p>Google, DuckDuckGo, Brave, Bing, Wikipedia, GitHub, and YouTube. The template adds Google News and DuckDuckGo News. More engines are available in SearXNG's engine catalogue.</p>"
+  },
+  {
+    "group": "Usage",
+    "q": "Why do I get different result counts on different days?",
+    "a": "<p>Upstream engines rate-limit, change their HTML, or temporarily fail. SearXNG reports failed engines in <code>unresponsive_engines</code>. Cached results also affect timing. This is normal for a metasearch instance.</p>"
+  },
+  {
+    "group": "Usage",
+    "q": "How do I use it from Telegram?",
+    "a": "<p>If your OpenClaw gateway is already connected to Telegram, send the same natural-language request to the bot. This repository does not configure Telegram, bot tokens, or channel access.</p>"
+  },
+  {
+    "group": "Maintenance",
+    "q": "How do I update SearXNG?",
+    "a": "<p>Run <code>sudo bash scripts/update-searxng.sh</code>. The script backs up configuration, pulls the checked-out branch, reinstalls the editable package, restarts the service, and checks the API. The manual equivalent is documented on the maintenance page.</p>"
+  },
+  {
+    "group": "Maintenance",
+    "q": "How often should I update?",
+    "a": "<p>Monthly is reasonable. SearXNG frequently fixes engine scrapers and ships security patches. Update sooner if a specific engine stops working.</p>"
+  },
+  {
+    "group": "Maintenance",
+    "q": "How do I back up my configuration?",
+    "a": "<p>Run <code>bash scripts/backup-searxng.sh</code>. The archive goes to <code>~/searxng-backups/</code> and contains <code>settings.yml</code>, the systemd unit, <code>openclaw.json</code> if present, and a generated <code>restore.sh</code>.</p>"
+  },
+  {
+    "group": "Maintenance",
+    "q": "How do I restore a backup?",
+    "a": "<p>Extract the archive and run <code>bash restore.sh</code> as your user, not with <code>sudo</code>; the helper calls <code>sudo</code> for system files and restarts both services.</p>"
+  },
+  {
+    "group": "Maintenance",
+    "q": "What if something breaks?",
+    "a": "<p>Run <code>bash scripts/test-setup.sh</code>, read the <a href=\"/troubleshooting/\">troubleshooting page</a>, and inspect <code>sudo journalctl -u searxng -n 100 --no-pager</code>. If you open an issue, include the diagnostics block and your OpenClaw version.</p>"
+  },
+  {
+    "group": "Comparison",
+    "q": "SearXNG vs a commercial search API",
+    "a": "<p>SearXNG has no search API fee or key, aggregates multiple engine sources, and is operated by you. Commercial APIs are metered or subscription-based, use one vendor index, and are operated by the vendor. SearXNG requires patching and monitoring; an API does not.</p>"
+  },
+  {
+    "group": "Comparison",
+    "q": "Why not use DuckDuckGo directly?",
+    "a": "<p>SearXNG can query DuckDuckGo plus the other engines you enable, and returns one JSON response. It gives you control over categories, engines, and caching. It does not make you anonymous to DuckDuckGo.</p>"
+  },
+  {
+    "group": "Comparison",
+    "q": "Is the result quality as good as Google?",
+    "a": "<p>Sometimes, sometimes not. SearXNG aggregates whatever the enabled engines return. Google's own ranking is not reproduced exactly, and engines can return different result sets to a server IP than to a browser. Compare results across engines for high-stakes queries.</p>"
+  },
+  {
+    "group": "Comparison",
+    "q": "How fast is search?",
+    "a": "<p>There is no benchmark in this repository and no promised latency. Response time depends on which engines answer, upstream rate limits, the host, and network path. Measure with your own queries and engine set.</p>"
+  },
+  {
+    "group": "Contributing",
+    "q": "How can I contribute?",
+    "a": "<p>Report bugs, improve docs, test on another distribution, or send pull requests. Tested compatibility reports are especially useful. See <a href=\"/about/\">About</a> and the repository's <code>CONTRIBUTING.md</code>.</p>"
+  },
+  {
+    "group": "Contributing",
+    "q": "Can I sell or modify this?",
+    "a": "<p>Yes. The MIT License permits commercial use and modification, provided the copyright and permission notice are included. SearXNG and OpenClaw have their own licenses.</p>"
+  },
+  {
+    "group": "Contributing",
+    "q": "Where can I learn more?",
+    "a": "<p>Start with the <a href=\"/install/\">install guide</a>, <a href=\"/configuration/\">configuration reference</a>, and <a href=\"/security/\">security model</a>. Upstream documentation: <a href=\"https://docs.searxng.org/\" rel=\"noopener\">SearXNG</a> and <a href=\"https://docs.openclaw.ai/\" rel=\"noopener\">OpenClaw</a>.</p>"
+  }
+]

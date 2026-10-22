@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Self-hosted search for OpenClaw</p>
+      <h1>Private search, wired into your agent.</h1>
+      <p class="lede">
+        Run SearXNG on your own machine and give OpenClaw a JSON search backend with
+        {{ '70+' }} engines available, Redis caching, and multi-page results. No search
+        API key, no vendor query quota, no public instance.
+      </p>
+      <div class="button-row">
+        <a class="btn btn-primary" href="/install/">Install in ~20 minutes</a>
+        <a class="btn btn-ghost" href="#architecture">See the request path</a>
+      </div>
+      <ul class="hero-chips" aria-label="Project facts">
+        <li>Ubuntu 20.04+ / Debian 11+</li>
+        <li>MIT licensed</li>
+        <li>v{{ version }}</li>
+      </ul>
+    </div>
+
+    <div class="hero-visual">
+      <div class="mesh" aria-hidden="true">
+        <svg viewBox="0 0 520 420" role="presentation">
+          <defs>
+            <linearGradient id="lineFade" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#4ee1c1" stop-opacity=".55"/>
+              <stop offset="1" stop-color="#6cb6ff" stop-opacity=".08"/>
+            </linearGradient>
+          </defs>
+          <g stroke="url(#lineFade)" stroke-width="1">
+            <path d="M70 300 210 120 380 210 460 80"/>
+            <path d="M70 300 250 330 380 210"/>
+            <path d="M210 120 250 330"/>
+            <path d="M210 120 330 50 460 80"/>
+            <path d="M330 50 380 210"/>
+            <path d="M70 300 150 200 330 50"/>
+          </g>
+          <g fill="#4ee1c1">
+            <circle cx="70" cy="300" r="4"/>
+            <circle cx="210" cy="120" r="5"/>
+            <circle cx="380" cy="210" r="4"/>
+            <circle cx="460" cy="80" r="3"/>
+            <circle cx="250" cy="330" r="3"/>
+            <circle cx="330" cy="50" r="3"/>
+            <circle cx="150" cy="200" r="2.5"/>
+          </g>
+          <g fill="#6cb6ff" opacity=".7">
+            <circle cx="120" cy="90" r="2"/>
+            <circle cx="430" cy="300" r="2"/>
+            <circle cx="300" cy="250" r="2"/>
+            <circle cx="60" cy="180" r="2"/>
+            <circle cx="470" cy="180" r="2"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="terminal" role="group" aria-label="Installation commands">
+        <div class="terminal-bar">
+          <span class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="terminal-title">setup / local host</span>
+          <span class="terminal-badge">bash</span>
+        </div>
+        <pre class="terminal-body"><code><span class="t-prompt">$</span> git clone https://github.com/FiredMosquito831/searxng-openclaw-complete-setup.git
+<span class="t-prompt">$</span> cd searxng-openclaw-complete-setup
+<span class="t-prompt">$</span> sudo bash scripts/install-all.sh
+<span class="t-prompt">$</span> bash scripts/configure-openclaw.sh
+<span class="t-prompt">$</span> bash scripts/test-setup.sh</code></pre>
+        <div class="terminal-foot">
+          <span><span class="status-dot"></span> SearXNG :8080</span>
+          <span>JSON enabled</span>
+          <span>Redis local</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stat-band" aria-label="Key numbers">
+  <div class="container stat-grid">
+    <div class="stat">
+      <span class="stat-value">70+</span>
+      <span class="stat-label">engines available in SearXNG</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">{{ engine_count }}</span>
+      <span class="stat-label">engines enabled by the installer</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">$0</span>
+      <span class="stat-label">search API fees</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">127.0.0.1</span>
+      <span class="stat-label">default bind address</span>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>What you get</p>
+      <h2>A complete local search stack, not a snippet.</h2>
+      <p class="section-lede">
+        The installer handles the host. The configuration and scripts handle the
+        handoff to OpenClaw. The guides cover the failures you will actually hit.
+      </p>
+    </div>
+
+    <div class="card-grid">
+      <article class="card">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+        </span>
+        <h3>Local JSON endpoint</h3>
+        <p>SearXNG on <code>127.0.0.1:8080</code> with <code>format=json</code> enabled for agent use and a normal HTML UI for humans.</p>
+      </article>
+
+      <article class="card">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>
+        </span>
+        <h3>Redis cache</h3>
+        <p>A local Redis instance caches upstream responses. Nothing external is required and the cache never leaves the host.</p>
+      </article>
+
+      <article class="card">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg>
+        </span>
+        <h3>systemd service</h3>
+        <p>Starts on boot, restarts on failure, and runs as the unprivileged <code>searxng</code> user with sandboxing directives.</p>
+      </article>
+
+      <article class="card">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M9 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-4"/><path d="M14 4h6v6"/><path d="m20 4-8 8"/></svg>
+        </span>
+        <h3>OpenClaw handoff</h3>
+        <p>A configuration script backs up <code>openclaw.json</code>, registers the search plugin, validates it, and restarts the gateway.</p>
+      </article>
+
+      <article class="card">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M4 9h16M8 13h4M8 16h7"/></svg>
+        </span>
+        <h3>Multi-page results</h3>
+        <p>SearXNG's <code>pageno</code> parameter retrieves further pages. The bundled plugin template enables multi-page search and a 100-result default.</p>
+      </article>
+
+      <article class="card">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="4"/></svg>
+        </span>
+        <h3>Maintenance scripts</h3>
+        <p>Update from upstream, back up configuration with a restore helper, run a health check, or remove everything with confirmation.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint" id="architecture">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Request path</p>
+      <h2>One loopback hop between your agent and the engines.</h2>
+      <p class="section-lede">
+        OpenClaw calls a local JSON endpoint. SearXNG queries the engines you enabled,
+        merges the results, and caches responses in Redis. Nothing is exposed publicly
+        by the supplied configuration.
+      </p>
+    </div>
+
+    <div class="arch-panel">
+      <div class="arch-flow">
+        <div class="arch-node">
+          <span class="arch-kicker">Client</span>
+          <strong>OpenClaw gateway</strong>
+          <small>Telegram, CLI, or another channel</small>
+        </div>
+        <div class="arch-arrow" aria-hidden="true"><span></span></div>
+        <div class="arch-node">
+          <span class="arch-kicker">Provider</span>
+          <strong>searxng-search</strong>
+          <small>or the built-in <code>searxng</code> provider</small>
+        </div>
+        <div class="arch-arrow" aria-hidden="true"><span></span></div>
+        <div class="arch-node arch-node-accent">
+          <span class="arch-kicker">Loopback · JSON</span>
+          <strong>SearXNG :8080</strong>
+          <small>HTML UI + <code>format=json</code></small>
+        </div>
+        <div class="arch-arrow" aria-hidden="true"><span></span></div>
+        <div class="arch-node">
+          <span class="arch-kicker">Cache</span>
+          <strong>Redis :6379</strong>
+          <small>local, temporary results</small>
+        </div>
+      </div>
+
+      <div class="engine-fanout">
+        <span class="engine-fanout-label">Outbound to enabled engines</span>
+        <ul class="engine-chips" aria-label="Engines enabled by the installer">
+          {% for engine in engines %}
+          <li>{{ engine }}</li>
+          {% endfor %}
+          <li class="engine-more">+ more available</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>Seven enabled, seventy-plus available.</strong>
+      <p>SearXNG ships with a large engine catalogue. The installer enables a small set so queries stay fast and do not invite rate limits. Add engines in <code>/etc/searxng/settings.yml</code>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split">
+    <div>
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Zero-cost angle</p>
+      <h2>No API keys. Predictable cost.</h2>
+      <p>
+        SearXNG queries the engines for you. You pay for the host you already run, not
+        a metered search API. There is no key rotation, no monthly quota, and no vendor
+        account to manage.
+      </p>
+      <ul class="check-list">
+        <li>No commercial search subscription or per-query billing</li>
+        <li>No API credentials stored in the repository</li>
+        <li>Local Redis cache instead of a hosted cache</li>
+        <li>Change the engine set without changing your agent</li>
+      </ul>
+      <p class="micro-note">
+        "Unlimited" means no quota from this stack. Upstream engines can still
+        rate-limit your server; SearXNG reports them in <code>unresponsive_engines</code>.
+      </p>
+    </div>
+
+    <div class="panel">
+      <p class="panel-kicker">Privacy posture</p>
+      <h3>Local by default, honest about the edges.</h3>
+      <p>
+        SearXNG does not log queries or build profiles. Your requests still reach the
+        enabled engines from your server's IP address, so this is not an anonymity
+        network.
+      </p>
+      <p>
+        Search results are untrusted input. OpenClaw wraps web content in
+        <code>&lt;&lt;&lt;EXTERNAL_UNTRUSTED_CONTENT&gt;&gt;&gt;</code> boundaries and
+        strips chat-template special tokens before the model sees it. That layer does
+        not replace tool allowlists, approvals, or sandboxing.
+      </p>
+      <a class="text-link" href="/security/">Read the security model <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="section section-cta">
+  <div class="container cta-panel">
+    <div>
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Start here</p>
+      <h2>Install the service. Then wire the agent.</h2>
+      <p>The installer never touches OpenClaw. A separate script backs up your config, adds the plugin, validates it, and restarts the gateway.</p>
+    </div>
+    <div class="button-row">
+      <a class="btn btn-primary" href="/install/">Installation guide</a>
+      <a class="btn btn-ghost" href="/configuration/">Configuration reference</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

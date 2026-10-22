@@ -16,8 +16,19 @@ NC='\033[0m'
 log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
-# Create backup directory
-BACKUP_DIR="$HOME/searxng-backups/$(date +%Y%m%d-%H%M%S)"
+# Keep backups in the invoking user's home, even when run through sudo
+BACKUP_ROOT="$HOME/searxng-backups"
+USER_HOME="$HOME"
+if [ "$EUID" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
+    SUDO_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+    if [ -n "$SUDO_HOME" ]; then
+        USER_HOME="$SUDO_HOME"
+        BACKUP_ROOT="$SUDO_HOME/searxng-backups"
+    fi
+fi
+
+STAMP=$(date +%Y%m%d-%H%M%S)
+BACKUP_DIR="$BACKUP_ROOT/$STAMP"
 mkdir -p "$BACKUP_DIR"
 
 log_info "Creating backup in: $BACKUP_DIR"
@@ -43,8 +54,8 @@ if [ -f "/etc/systemd/system/searxng.service" ]; then
 fi
 
 # Backup OpenClaw config
-if [ -f "$HOME/.openclaw/openclaw.json" ]; then
-    cp "$HOME/.openclaw/openclaw.json" "$BACKUP_DIR/"
+if [ -f "$USER_HOME/.openclaw/openclaw.json" ]; then
+    cp "$USER_HOME/.openclaw/openclaw.json" "$BACKUP_DIR/"
     log_info "✅ openclaw.json backed up"
 fi
 
@@ -91,16 +102,22 @@ RESTORE
 chmod +x "$BACKUP_DIR/restore.sh"
 
 # Create archive
-cd "$HOME/searxng-backups"
-tar -czf "searxng-backup-$(date +%Y%m%d-%H%M%S).tar.gz" "$(basename $BACKUP_DIR)"
+cd "$BACKUP_ROOT"
+tar -czf "searxng-backup-$STAMP.tar.gz" "$(basename "$BACKUP_DIR")"
 rm -rf "$BACKUP_DIR"
+
+# A sudo invocation should not leave a root-owned archive in the user's home
+if [ "$EUID" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
+    chown "$SUDO_USER:" "$BACKUP_ROOT/searxng-backup-$STAMP.tar.gz" 2>/dev/null || true
+    chown "$SUDO_USER:" "$BACKUP_ROOT" 2>/dev/null || true
+fi
 
 echo ""
 echo "=========================================="
 echo "  ✅ Backup Complete!"
 echo "=========================================="
 echo ""
-echo "Backup location: $HOME/searxng-backups/searxng-backup-*.tar.gz"
+echo "Backup location: $BACKUP_ROOT/searxng-backup-$STAMP.tar.gz"
 echo ""
 echo "To restore:"
 echo "  1. Extract: tar -xzf searxng-backup-*.tar.gz"

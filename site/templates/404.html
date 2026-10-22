@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="error-page">
+  <div class="container error-grid">
+    <div>
+      <p class="eyebrow"><span class="eyebrow-dot"></span>404 / not found</p>
+      <h1>This result did not come back.</h1>
+      <p class="lede">
+        The page is not in the index. The search endpoint is still where you left it,
+        though.
+      </p>
+      <div class="button-row">
+        <a class="btn btn-primary" href="/">Back to the home page</a>
+        <a class="btn btn-ghost" href="/troubleshooting/">Troubleshooting</a>
+      </div>
+      <div class="error-links">
+        <a href="/install/">Install</a>
+        <a href="/configuration/">Configure</a>
+        <a href="/usage/">Usage</a>
+        <a href="/security/">Security</a>
+        <a href="/faq/">FAQ</a>
+      </div>
+    </div>
+    <div class="error-visual" aria-hidden="true">
+      <svg viewBox="0 0 360 360" role="presentation">
+        <circle cx="180" cy="180" r="118" fill="none" stroke="#1e2c39" stroke-width="1"/>
+        <circle cx="180" cy="180" r="78" fill="none" stroke="#1e2c39" stroke-width="1"/>
+        <circle cx="180" cy="180" r="38" fill="none" stroke="#1e2c39" stroke-width="1"/>
+        <path d="M180 62v236M62 180h236" stroke="#1e2c39" stroke-width="1"/>
+        <path d="M180 180 288 96" stroke="#4ee1c1" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="288" cy="96" r="5" fill="#4ee1c1"/>
+        <circle cx="180" cy="180" r="3" fill="#6cb6ff"/>
+        <text x="180" y="196" text-anchor="middle" fill="#e8f0f5" font-family="IBM Plex Mono, monospace" font-size="30" font-weight="600">404</text>
+      </svg>
+    </div>
+  </div>
+</section>
+{% endblock %}

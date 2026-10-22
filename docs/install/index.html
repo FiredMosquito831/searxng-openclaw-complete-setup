@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Install SearXNG for OpenClaw (automated or manual)</title>
+  <meta name="description" content="Install SearXNG, Redis, and a systemd service on Ubuntu or Debian, then connect the JSON search API to OpenClaw. Automated and manual steps.">
+  <meta name="keywords" content="install SearXNG, OpenClaw setup, Ubuntu SearXNG, Debian, Redis, systemd, manual installation, search plugin">
+  <meta name="author" content="FiredMosquito831">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://searxng.danubelabs.net/install/">
+
+  <meta name="theme-color" content="#070b0f">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="SearXNG + OpenClaw">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="Install SearXNG for OpenClaw (automated or manual)">
+  <meta property="og:description" content="Install SearXNG, Redis, and a systemd service on Ubuntu or Debian, then connect the JSON search API to OpenClaw. Automated and manual steps.">
+  <meta property="og:url" content="https://searxng.danubelabs.net/install/">
+  <meta property="og:image" content="https://searxng.danubelabs.net/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="SearXNG + OpenClaw: private, self-hosted search with no API keys.">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Install SearXNG for OpenClaw (automated or manual)">
+  <meta name="twitter:description" content="Install SearXNG, Redis, and a systemd service on Ubuntu or Debian, then connect the JSON search API to OpenClaw. Automated and manual steps.">
+  <meta name="twitter:image" content="https://searxng.danubelabs.net/og.png">
+  <meta name="twitter:image:alt" content="SearXNG + OpenClaw documentation">
+
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Install SearXNG for OpenClaw on Ubuntu or Debian",
+  "description": "Install SearXNG, Redis, and a systemd service on Ubuntu or Debian, then connect the JSON search API to OpenClaw. Automated and manual steps.",
+  "totalTime": "PT30M",
+  "estimatedCost": {
+    "@type": "MonetaryAmount",
+    "currency": "USD",
+    "value": "0"
+  },
+  "tool": [
+    {
+      "@type": "HowToTool",
+      "name": "Ubuntu 20.04+ or Debian 11+"
+    },
+    {
+      "@type": "HowToTool",
+      "name": "sudo access"
+    }
+  ],
+  "step": [
+    {
+      "@type": "HowToStep",
+      "position": 1,
+      "name": "Clone the repository",
+      "text": "git clone https://github.com/FiredMosquito831/searxng-openclaw-complete-setup.git",
+      "url": "https://searxng.danubelabs.net/install/#clone-the-repository"
+    },
+    {
+      "@type": "HowToStep",
+      "position": 2,
+      "name": "Install SearXNG and Redis",
+      "text": "sudo bash scripts/install-all.sh",
+      "url": "https://searxng.danubelabs.net/install/#install-searxng-and-redis"
+    },
+    {
+      "@type": "HowToStep",
+      "position": 3,
+      "name": "Configure OpenClaw",
+      "text": "bash scripts/configure-openclaw.sh (run as the OpenClaw user, without sudo)",
+      "url": "https://searxng.danubelabs.net/install/#configure-openclaw"
+    },
+    {
+      "@type": "HowToStep",
+      "position": 4,
+      "name": "Verify the installation",
+      "text": "bash scripts/test-setup.sh",
+      "url": "https://searxng.danubelabs.net/install/#verify-the-installation"
+    }
+  ]
+}</script>
+  <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://searxng.danubelabs.net/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Install",
+      "item": "https://searxng.danubelabs.net/install/"
+    }
+  ]
+}</script>
+</head>
+<body class="page-install">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="mesh-bg" aria-hidden="true">
+    <span class="mesh-node n1"></span>
+    <span class="mesh-node n2"></span>
+    <span class="mesh-node n3"></span>
+    <span class="mesh-node n4"></span>
+    <span class="mesh-node n5"></span>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="SearXNG + OpenClaw documentation home">
+        <svg class="brand-mark" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="14" cy="14" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M20.5 20.5 27 27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="14" cy="14" r="2.4" fill="currentColor"/>
+          <path d="M14 5.5v3M14 19.5v3M5.5 14h3M19.5 14h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-text">searxng<span class="brand-sep">/</span>openclaw</span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="sr-only">Toggle navigation</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/install/" aria-current="page">Install</a>
+        <a href="/configuration/">Configure</a>
+        <a href="/usage/">Usage</a>
+        <a href="/maintenance/">Maintain</a>
+        <a href="/security/">Security</a>
+        <a href="/troubleshooting/">Troubleshooting</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/about/">About</a>
+        <a class="nav-github" href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.06-.49.06-.49.81.06 1.23.83 1.23.83.72 1.23 1.89.88 2.35.67.07-.52.28-.88.51-1.08-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow"><span class="eyebrow-dot"></span>Installation</p>
+    <h1>From bare Ubuntu to a local JSON search endpoint.</h1>
+    <p class="lede">
+      The automated path installs SearXNG, Redis, and a systemd service. A separate
+      script connects the endpoint to OpenClaw. The manual path exposes every command.
+    </p>
+    <ul class="meta-strip" aria-label="Installation facts">
+      <li><span>Time</span>15–30 minutes</li>
+      <li><span>Host</span>Ubuntu 20.04+ / Debian 11+</li>
+      <li><span>Access</span>sudo</li>
+      <li><span>Agent</span>OpenClaw optional</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container">
+    <div class="callout callout-warn">
+      <strong>The installer does not configure OpenClaw.</strong>
+      <p>It installs the service and prints the next command. Run <code>bash scripts/configure-openclaw.sh</code> as the user that owns <code>~/.openclaw</code>, without <code>sudo</code>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Automated path</p>
+      <h2>Four commands, with a verification step that tells the truth.</h2>
+    </div>
+
+    <ol class="install-steps">
+      <li class="install-step" id="clone-the-repository">
+        <div class="step-number">01</div>
+        <div class="step-body">
+          <h3>Clone the repository</h3>
+          <div class="codeblock">
+<pre><code>git clone https://github.com/FiredMosquito831/searxng-openclaw-complete-setup.git
+cd searxng-openclaw-complete-setup</code></pre>
+          </div>
+        </div>
+      </li>
+
+      <li class="install-step" id="install-searxng-and-redis">
+        <div class="step-number">02</div>
+        <div class="step-body">
+          <h3>Install SearXNG and Redis</h3>
+          <div class="codeblock">
+<pre><code>sudo bash scripts/install-all.sh</code></pre>
+          </div>
+          <p>The script installs apt dependencies, creates the <code>searxng</code> user, clones SearXNG, builds a virtual environment, writes settings, starts Redis, installs the systemd unit, and checks the JSON API.</p>
+          <p class="small">On a re-run it preserves an existing <code>/etc/searxng/settings.yml</code> and writes a timestamped backup next to it.</p>
+        </div>
+      </li>
+
+      <li class="install-step" id="configure-openclaw">
+        <div class="step-number">03</div>
+        <div class="step-body">
+          <h3>Configure OpenClaw</h3>
+          <div class="codeblock">
+<pre><code>bash scripts/configure-openclaw.sh</code></pre>
+          </div>
+          <p>Run this as your OpenClaw user, <strong>without sudo</strong>. It backs up <code>~/.openclaw/openclaw.json</code>, adds the search plugin block, validates the config, restarts the user gateway, and verifies the plugin is visible.</p>
+          <div class="callout callout-info compact">
+            <strong>Plugin compatibility.</strong>
+            <p>The script writes a <code>searxng-search</code> block for the plugin this project was built around. Newer OpenClaw releases use a built-in <code>searxng</code> provider with different keys. See <a href="/configuration/#openclaw-configuration">Configuration</a> for both shapes.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="install-step" id="verify-the-installation">
+        <div class="step-number">04</div>
+        <div class="step-body">
+          <h3>Verify the installation</h3>
+          <div class="codeblock">
+<pre><code>bash scripts/test-setup.sh</code></pre>
+          </div>
+          <p>The suite checks the service, Redis, the HTML endpoint, the JSON API, page 2, OpenClaw installation, plugin visibility, and disk space. Missing OpenClaw or an undetected plugin is a warning, not a failure.</p>
+          <p>Standalone SearXNG is then reachable at <code>http://127.0.0.1:8080</code>.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Prerequisites</p>
+      <h2>What the host needs.</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">Resource</th><th scope="col">Minimum</th><th scope="col">Recommended</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>OS</td><td>Ubuntu 20.04 / Debian 11</td><td>Ubuntu 22.04+</td></tr>
+          <tr><td>RAM</td><td>512 MB</td><td>2 GB</td></tr>
+          <tr><td>Disk</td><td>1 GB free</td><td>5 GB free</td></tr>
+          <tr><td>CPU</td><td>1 core</td><td>2+ cores</td></tr>
+          <tr><td>Network</td><td>Outbound HTTPS</td><td>Broadband</td></tr>
+          <tr><td>Access</td><td><code>sudo</code></td><td>—</td></tr>
+          <tr><td>Agent</td><td>OpenClaw optional</td><td>OpenClaw with a SearXNG plugin</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">The installer checks <code>/etc/os-release</code> and refuses distributions other than Ubuntu and Debian. Windows is supported through WSL2 with an Ubuntu distribution. macOS is not covered by these scripts.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Manual path</p>
+      <h2>Install every component yourself.</h2>
+      <p class="section-lede">
+        Use this path when you want to inspect each step, change paths, or debug a
+        failed automated install. These commands are the same work the installer
+        performs.
+      </p>
+    </div>
+
+    <div class="manual-steps">
+      <article class="manual-step">
+        <h3 id="manual-check">0. Check the host</h3>
+        <div class="codeblock">
+<pre><code>cat /etc/os-release
+free -h
+df -h /
+sudo whoami</code></pre>
+        </div>
+      </article>
+
+      <article class="manual-step">
+        <h3 id="manual-dependencies">1. Install dependencies</h3>
+        <div class="codeblock">
+<pre><code>sudo apt update
+
+sudo apt install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    redis-server \
+    build-essential \
+    libxslt1-dev \
+    zlib1g-dev \
+    libffi-dev \
+    libssl-dev \
+    git \
+    curl \
+    wget \
+    jq</code></pre>
+        </div>
+      </article>
+
+      <article class="manual-step">
+        <h3 id="manual-user">2. Create the user and directories</h3>
+        <div class="codeblock">
+<pre><code>sudo useradd --shell /bin/bash --system \
+    --home-dir "/usr/local/searxng" \
+    --comment "SearXNG user" \
+    searxng
+
+sudo mkdir -p /usr/local/searxng /etc/searxng
+sudo chown -R searxng:searxng /usr/local/searxng /etc/searxng</code></pre>
+        </div>
+      </article>
+
+      <article class="manual-step">
+        <h3 id="manual-clone">3. Clone SearXNG</h3>
+        <div class="codeblock">
+<pre><code>sudo -u searxng -i &lt;&lt; 'EOF'
+cd /usr/local/searxng
+git clone https://github.com/searxng/searxng.git searxng-src
+EOF</code></pre>
+        </div>
+      </article>
+
+      <article class="manual-step">
+        <h3 id="manual-venv">4. Create the virtual environment</h3>
+        <div class="codeblock">
+<pre><code>sudo -u searxng -i &lt;&lt; 'EOF'
+cd /usr/local/searxng
+python3 -m venv searx-pyenv
+source /usr/local/searxng/searx-pyenv/bin/activate
+pip install --upgrade pip setuptools wheel pyyaml
+EOF</code></pre>
+        </div>
+      </article>
+
+      <article class="manual-step">
+        <h3 id="manual-install-searxng">5. Install SearXNG</h3>
+        <div class="codeblock">
+<pre><code>sudo -u searxng -i &lt;&lt; 'EOF'
+cd /usr/local/searxng/searxng-src
+source /usr/local/searxng/searx-pyenv/bin/activate
+pip install --use-pep517 --no-build-isolation -e .
+EOF</code></pre>
+        </div>
+      </article>
+
+      <article class="manual-step">
+        <h3 id="manual-settings">6. Write the configuration</h3>
+        <p>The minimum needed for OpenClaw is JSON output, loopback binding, Redis, and a secret key.</p>
+        <div class="codeblock">
+<pre><code>SECRET_KEY=$(openssl rand -hex 32)
+sudo bash -c "cat &gt; /etc/searxng/settings.yml &lt;&lt; SETTINGS
+use_default_settings:
+  engines:
+    keep_only:
+      - google
+      - duckduckgo
+      - brave
+      - bing
+      - wikipedia
+      - github
+      - youtube
+
+general:
+  debug: false
+  instance_name: \"SearXNG\"
+  enable_metrics: true
+
+search:
+  safe_search: 0
+  autocomplete: \"google\"
+  default_lang: \"en\"
+  formats:
+    - html
+    - json
+
+server:
+  secret_key: \"$SECRET_KEY\"
+  limiter: false
+  image_proxy: true
+  http_protocol_version: \"1.0\"
+  bind_address: \"127.0.0.1\"
+  port: 8080
+  base_url: false
+
+redis:
+  url: \"redis://localhost:6379/0\"
+
+ui:
+  default_theme: simple
+  default_locale: \"en\"
+  query_in_title: true
+  infinite_scroll: true
+  center_alignment: true
+  results_on_new_tab: true
+
+outgoing:
+  request_timeout: 10.0
+  max_request_timeout: 30.0
+  useragent_suffix: \"\"
+  pool_connections: 100
+  pool_maxsize: 50
+  enable_http2: true
+
+engines:
+  - name: google
+    engine: google
+    shortcut: g
+    disabled: false
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: d
+    disabled: false
+  - name: brave
+    engine: brave
+    shortcut: b
+    disabled: false
+  - name: bing
+    engine: bing
+    shortcut: i
+    disabled: false
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: w
+    disabled: false
+  - name: github
+    engine: github
+    shortcut: gh
+    disabled: false
+  - name: youtube
+    engine: youtube
+    shortcut: yt
+    disabled: false
+SETTINGS
+"
+
+sudo chown searxng:searxng /etc/searxng/settings.yml</code></pre>
+        </div>
+        <p class="small">The repository also has an annotated <a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/configs/settings.yml.template">settings.yml.template</a> with two news engines added.</p>
+      </article>
+
+      <article class="manual-step">
+        <h3 id="manual-redis">7. Start Redis</h3>
+        <div class="codeblock">
+<pre><code>sudo systemctl start redis-server
+sudo systemctl enable redis-server
+redis-cli ping</code></pre>
+        </div>
+        <p>Expected: <code>PONG</code>.</p>
+      </article>
+
+      <article class="manual-step">
+        <h3 id="manual-service">8. Create the systemd unit</h3>
+        <div class="codeblock">
+<pre><code>sudo bash -c "cat &gt; /etc/systemd/system/searxng.service &lt;&lt; 'SERVICE'
+[Unit]
+Description=SearXNG Privacy-Respecting Metasearch Engine
+After=network.target redis-server.service
+Wants=redis-server.service
+
+[Service]
+Type=simple
+User=searxng
+Group=searxng
+WorkingDirectory=/usr/local/searxng/searxng-src
+
+Environment=\"SEARXNG_SETTINGS_PATH=/etc/searxng/settings.yml\"
+Environment=\"PYTHONPATH=/usr/local/searxng/searxng-src\"
+
+ExecStart=/usr/local/searxng/searx-pyenv/bin/python -m searx.webapp --port 8080 --bind 127.0.0.1
+
+Restart=always
+RestartSec=10
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+"
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now searxng.service</code></pre>
+        </div>
+      </article>
+
+      <article class="manual-step">
+        <h3 id="manual-openclaw">9. Configure OpenClaw</h3>
+        <p>Install or select a SearXNG plugin/provider for your OpenClaw release. This repository supplies the configuration, not the plugin package.</p>
+        <div class="codeblock">
+<pre><code>mkdir -p ~/.openclaw
+cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.backup 2&gt;/dev/null || true
+nano ~/.openclaw/openclaw.json</code></pre>
+        </div>
+        <p>Add the block for the <code>searxng-search</code> plugin:</p>
+        <div class="codeblock">
+<pre><code>{
+  "plugins": {
+    "entries": {
+      "searxng-search": {
+        "enabled": true,
+        "config": {
+          "baseUrl": "http://localhost:8080",
+          "timeoutMs": 60000,
+          "defaultCount": 100,
+          "enableMultiPage": true
+        }
+      }
+    }
+  }
+}</code></pre>
+        </div>
+        <p>Then restart the gateway as your user:</p>
+        <div class="codeblock">
+<pre><code>systemctl --user restart openclaw-gateway.service
+sleep 10
+openclaw doctor 2&gt;&amp;1 | grep -i searxng</code></pre>
+        </div>
+        <p class="small">Using the built-in provider instead? See <a href="/configuration/#openclaw-configuration">the alternative configuration</a>.</p>
+      </article>
+
+      <article class="manual-step">
+        <h3 id="manual-verify">10. Verify</h3>
+        <div class="codeblock">
+<pre><code>sudo systemctl status searxng --no-pager
+redis-cli ping
+curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '.results | length'
+curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '.unresponsive_engines'</code></pre>
+        </div>
+        <p>A positive result count means the JSON API is working. Exact counts vary by engine availability and upstream rate limits.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Post-install checks</p>
+      <h2>Confirm the service, the API, and the agent.</h2>
+    </div>
+    <div class="codeblock">
+<pre><code># Services
+sudo systemctl status searxng --no-pager
+redis-cli ping
+
+# JSON API and failed engines
+curl -s "http://127.0.0.1:8080/search?q=test&amp;format=json" | jq '{results: (.results | length), unresponsive: .unresponsive_engines}'
+
+# OpenClaw integration
+openclaw doctor 2&gt;&amp;1 | grep -i searxng
+
+# Full suite
+bash scripts/test-setup.sh</code></pre>
+    </div>
+    <div class="link-cards">
+      <a class="link-card" href="/troubleshooting/">
+        <span class="link-card-kicker">If something fails</span>
+        <strong>Troubleshooting guide</strong>
+        <span>Service failures, port conflicts, JSON errors, Redis, plugin visibility.</span>
+      </a>
+      <a class="link-card" href="/configuration/">
+        <span class="link-card-kicker">Next</span>
+        <strong>Configuration reference</strong>
+        <span>Engines, Redis, timeouts, and both OpenClaw config shapes.</span>
+      </a>
+    </div>
+  </div>
+</section>
+    <nav class="container page-nav" aria-label="Previous and next pages">
+      <a class="page-nav-link prev" href="/">
+        <span class="page-nav-label">Previous</span>
+        <span class="page-nav-title">Home</span>
+      </a>
+      <a class="page-nav-link next" href="/configuration/">
+        <span class="page-nav-label">Next</span>
+        <span class="page-nav-title">Configure</span>
+      </a>
+    </nav>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="/" aria-label="Documentation home">
+          <svg class="brand-mark" width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="14" cy="14" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M20.5 20.5 27 27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="14" cy="14" r="2.4" fill="currentColor"/>
+          </svg>
+          <span class="brand-text">searxng<span class="brand-sep">/</span>openclaw</span>
+        </a>
+        <p>Local, privacy-respecting search for your OpenClaw agent. No search API keys, no per-query bill.</p>
+        <p class="footer-mono">searxng.danubelabs.net</p>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Guide</h2>
+        <ul class="footer-links">
+          <li><a href="/install/">Install</a></li>
+          <li><a href="/configuration/">Configuration</a></li>
+          <li><a href="/usage/">Usage</a></li>
+          <li><a href="/maintenance/">Maintenance</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Reference</h2>
+        <ul class="footer-links">
+          <li><a href="/security/">Security</a></li>
+          <li><a href="/troubleshooting/">Troubleshooting</a></li>
+          <li><a href="/faq/">FAQ</a></li>
+          <li><a href="/about/">About &amp; license</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Project</h2>
+        <ul class="footer-links">
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup" rel="noopener">GitHub repository</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/issues" rel="noopener">Issues</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/CHANGELOG.md" rel="noopener">Changelog</a></li>
+          <li><a href="https://github.com/FiredMosquito831/searxng-openclaw-complete-setup/blob/main/LICENSE" rel="noopener">MIT license</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 FiredMosquito831. MIT licensed.</p>
+      <p>Version 1.1.0 · Updated 2026-10-22 · Not affiliated with SearXNG or OpenClaw.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>
